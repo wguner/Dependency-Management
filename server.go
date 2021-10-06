@@ -6,6 +6,34 @@ import (
 	"net/http"
 )
 
+func process(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		http.Error(w, "404 not found.", http.StatusNotFound)
+		return
+	}
+
+	switch r.Method {
+	case "GET":
+		// sending a web page to user
+		http.ServeFile(w, r, "form.html")
+	case "POST":
+		// process data from the file
+		if err := r.ParseForm(); err != nil {
+			// parses raw query from the url
+			fmt.Fprintf(w, "ParseForm() err: %v", err)
+			return
+		}
+
+		name := r.FormValue("name")
+		occupation := r.FormValue("occupation")
+
+		fmt.Fprintf(w, "%s is a %s\n", name, occupation)
+
+	default:
+		fmt.Fprintf(w, "Sorry, only GET and POST methods are supported.")
+	}
+}
+
 /*
 assuming we will use a generic url scheme
 [//[user:password@]host[:port]][/]path[?query][#fragment]
