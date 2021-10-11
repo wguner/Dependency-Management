@@ -7,7 +7,7 @@ import click
 
 def request(address, name):
     endpoint = f"http://{address}/?name={name}/"
-    click.echo(f"Endpoint:\t{endpoint}")
+    # click.echo(f"Endpoint:\t{endpoint}")
     request = requests.get(endpoint)
     click.echo(request.text)
 
