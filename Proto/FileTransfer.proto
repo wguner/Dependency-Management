@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+option go_package = "./FileTransfer";
+
+package FileTransfer;
+
+service FileService {
+    rpc Download(Request) returns (stream File) {};
+    rpc Upload(stream File) returns (Response) {};
+    rpc NameFile(Request) returns (Response) {};
+}
+
+message File {
+    oneof content {
+        string name = 1;
+        bytes chunk = 2;   
+    }
+}
+
+message Request {
+    string header = 1;
+    string body = 2;
+}
+
+message Response {
+    string header = 1;
+    string body = 2;
+}
