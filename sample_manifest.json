@@ -1,0 +1,17 @@
+{
+    "dependencies": [
+        {
+            "name": "Sample",
+            "version": "0.0.1"
+        },
+        {
+            "name": "Meta",
+            "version": "0.2.1"
+        },
+        {
+            "name": "Markle",
+            "version": "3.0.0"
+        }
+    ],
+    "registry": "http://localhost:9091/registry"
+}

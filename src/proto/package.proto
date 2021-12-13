@@ -1,0 +1,19 @@
+syntax="proto3";
+
+package package;
+
+message Chunk {
+    bytes byte = 1;
+}
+
+service Download {
+    rpc FileDownload(Request) returns (stream Response) {}
+}
+
+message Request {
+    string title = 1;
+}
+
+message Response {
+    bytes data = 1;
+}
