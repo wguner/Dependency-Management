@@ -1,1 +1,2 @@
-# Dependency-Management
+# Package-Bird - Dependency-Management and Build Solution
+This project consist of client and server components interacting over a gRPC-defined interface. Packagebird clients can setup local development environments from packages of code or binaries stored in the server.
