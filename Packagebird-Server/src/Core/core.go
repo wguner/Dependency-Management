@@ -9,7 +9,7 @@ import (
 // Temporary constant for address
 const (
 	ADDRESS  = "127.0.0.1:50051"
-	MONGOURI = "mongodb//:localhost:27017"
+	MONGOURI = "mongodb://localhost:27017"
 )
 
 // Entry-poin for the server application
@@ -23,7 +23,7 @@ func main() {
 		log.Fatalf("Error encountered on gRPC server:\n%v\nShutting down...", err)
 	}
 
-	err = DatabaseInterface.MongoDBServerDisconnect(mongoDBClient);
+	err = DatabaseInterface.MongoDBServerDisconnect(*mongoDBClient);
 	if err != nil {
 		log.Fatalf("Error encountered on server disconnecting from MongoDB:\n%v\nShutting down...", err)
 	}
