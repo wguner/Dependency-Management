@@ -1,8 +1,11 @@
 import click
 import sys
+import os
+import tarfile
 
-import src.network_interface.PackageOperations_pb2
-import src.network_interface.PackageOperations_pb2_grpc
+import src.network_interface.PackageOperations.PackageOperations_pb2
+import src.network_interface.PackageOperations.PackageOperations_pb2_grpc
+from src.network_interface.FileTransfer.fileserver_client import FileTransfer
 
 # Entry-point for the command line interface. Appears as 'packagebird'.
 @click.group()
@@ -45,3 +48,44 @@ def addpackage(ctx, name, version):
     # Move back to the development root directory
     os.chdir('..')
     os.chdir('..')
+
+# Create package from a development directory
+@cli.command('createpackage', short_help='Creates a package from the current directory')
+@click.option('--debug', is_flag=True, help='Debug option for')
+@click.pass_context
+def createpackage(ctx, debug):
+    # Get packages and location
+    project_name = os.path.basename(os.getcwd())
+    version = 1
+    message = f'Project Name: {project_name}, version: {version}'
+    print(message)
+
+    # Package name
+    package_name = f'{project_name}-v{version}.tar.gz'
+
+    # Add the contents
+    with tarfile.open(package_name, 'w:gz', format=tarfile.GNU_FORMAT) as tar:
+        for directory, directorynames, filenames in os.walk("."):
+            for file in filenames:
+                if (debug):
+                    click.echo(f'Directory Visited: {directory}')
+
+                if "/packages/" not in directory and "\\packages\\" not in directory and "./packages/" not in directory:
+                    if (debug):
+                        click.echo(f'Visited directory and file not in packages. File reached is {file}.')
+                    
+                    if file != package_name:
+                        tar.add(os.path.join(directory, file))
+                    else:
+                        if (debug):
+                            click.echo(f'File {file} is the temp client tar file, should not be bundled.')
+                elif debug:
+                    click.echo(f'File visited in packages directory! Directory is {directory}, file is {file}')
+                    
+
+
+    # Upload to server
+    if (not debug):
+        fileservice = FileTransfer()
+        fileservice.upload('127.0.0.1', '50051', package_name)
+    os.remove(package_name)
