@@ -11,7 +11,7 @@ import (
 )
 
 // All to-be-implemented gRPC methods must be added to this structure
-type grpcServer struct {
+type GRPCServer struct {
 	packageOperations.UnimplementedPackageOperationServicesServer
 	fileTransfer.UnimplementedFileServiceServer
 }
@@ -30,8 +30,8 @@ func PackagebirdServerStart(address string) error {
 	server := grpc.NewServer()
 
 	// Register passed functions with implementations, must add each set of operations
-	packageOperations.RegisterPackageOperationServicesServer(server, &grpcServer{})
-	fileTransfer.RegisterFileServiceServer(server, &grpcServer{})
+	packageOperations.RegisterPackageOperationServicesServer(server, &GRPCServer{})
+	fileTransfer.RegisterFileServiceServer(server, &GRPCServer{})
 
 	log.Print("Registered gRPC methods on server...")
 
