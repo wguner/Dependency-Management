@@ -2,6 +2,7 @@ import click
 import sys
 import os
 import tarfile
+from src.filesystem_interface.filesystem_interface import FilesystemInterface
 
 import src.network_interface.PackageOperations.PackageOperations_pb2
 import src.network_interface.PackageOperations.PackageOperations_pb2_grpc
@@ -89,3 +90,23 @@ def createpackage(ctx, debug):
         fileservice = FileTransfer()
         fileservice.upload('127.0.0.1', '50051', package_name)
     os.remove(package_name)
+
+# Create project both locally and on the remote server
+@cli.command('createproject', short_help='Creates a project in the local development environment and remotely on the server')
+@click.option('-n', '--name', help='Name of project being created')
+@click.option('-d', '--description', help='Description of new project being created')
+@click.pass_context
+def createproject(ctx, name, description):
+
+    # Check if project already present in server
+    
+    
+    # Create the directory or notify user directory already present
+    if FilesystemInterface.create_dir(name):
+        click.echo(f"Creating {name} project directory...")
+    else:
+        click.echo(f"Directory {name} already present at location!")
+        return
+    
+    
+    pass
