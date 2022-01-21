@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import src.package_operations.PackageOperations_pb2 as PackageOperations__pb2
+import src.network_interface.PackageOperations.PackageOperations_pb2 as PackageOperations__pb2
 
 
 class PackageOperationServicesStub(object):

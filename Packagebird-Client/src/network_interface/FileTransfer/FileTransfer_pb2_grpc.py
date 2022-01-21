@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import src.fileserver.FileTransfer_pb2 as FileTransfer__pb2
+import src.network_interface.FileTransfer.FileTransfer_pb2 as FileTransfer__pb2
 
 
 class FileServiceStub(object):
