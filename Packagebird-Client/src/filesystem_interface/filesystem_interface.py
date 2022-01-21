@@ -10,8 +10,8 @@ class FilesystemInterface(object):
 
     # Creates a directory if not already present
     @staticmethod
-    def create_dir(self, name: str) -> bool:
-        if not self.check_if_dir_exist(name):
+    def create_dir(name: str) -> bool:
+        if not FilesystemInterface.check_if_dir_exist(name):
             os.mkdir(name)
             return True
         return False

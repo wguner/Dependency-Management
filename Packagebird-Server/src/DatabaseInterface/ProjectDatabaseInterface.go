@@ -25,7 +25,7 @@ func NewProject(client mongo.Client, name string, description string) error {
 			// If no project found with name, create new project
 			log.Printf("Creating new project with name %v in database...", name)
 
-			newProject := structures.Project{Name: name, Description: description, UUID: "", LatestVersion: 0, Packages: nil}
+			newProject := structures.Project{Name: name, Description: description, UUID: "", LatestVersion: 0, Packages: nil, Source: ""}
 			_, insertErr := collection.InsertOne(context.TODO(), newProject)
 
 			if insertErr != nil {

@@ -2,11 +2,16 @@ import click
 import sys
 import os
 import tarfile
+import grpc
+
 from src.filesystem_interface.filesystem_interface import FilesystemInterface
 
 import src.network_interface.PackageOperations.PackageOperations_pb2
 import src.network_interface.PackageOperations.PackageOperations_pb2_grpc
 from src.network_interface.FileTransfer.fileserver_client import FileTransfer
+
+import src.network_interface.ProjectOperations.ProjectOperations_pb2 as ProjectOperations_pb2
+import src.network_interface.ProjectOperations.ProjectOperations_pb2_grpc as ProjectOperations_pb2_grpc
 
 # Entry-point for the command line interface. Appears as 'packagebird'.
 @click.group()
@@ -99,8 +104,15 @@ def createpackage(ctx, debug):
 def createproject(ctx, name, description):
 
     # Check if project already present in server
+    request = ProjectOperations_pb2.ProjectRequest(name=name)
     
-    
+    # Needs moved to discrete logical section
+    with grpc.insecure_channel('localhost:50051') as channel:
+        stub = ProjectOperations_pb2_grpc.ProjectOperationServicesStub(channel)
+        response = stub.GetProject(ProjectOperations_pb2.ProjectRequest(name=name))
+        if response.exist:
+            click.echo(f"Project {name} already present on server. Please pick a different name.")
+
     # Create the directory or notify user directory already present
     if FilesystemInterface.create_dir(name):
         click.echo(f"Creating {name} project directory...")
