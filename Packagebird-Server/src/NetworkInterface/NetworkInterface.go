@@ -6,17 +6,23 @@ import (
 
 	fileTransfer "packagebird-server/src/NetworkInterface/FileTransfer"
 	packageOperations "packagebird-server/src/NetworkInterface/PackageOperations"
+	projectOperations "packagebird-server/src/NetworkInterface/ProjectOperations"
 
+	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 )
 
 // All to-be-implemented gRPC methods must be added to this structure
 type GRPCServer struct {
 	packageOperations.UnimplementedPackageOperationServicesServer
+	projectOperations.UnimplementedProjectOperationServicesServer
 	fileTransfer.UnimplementedFileServiceServer
 }
 
-func PackagebirdServerStart(address string) error {
+// Global mongoDBClient reference
+var mongoDBClientGlobal *mongo.Client
+
+func PackagebirdServerStart(address string, mongodbClient *mongo.Client) error {
 
 	// Creates listener at specified address with port
 	listener, err := net.Listen("tcp", address)
@@ -26,11 +32,15 @@ func PackagebirdServerStart(address string) error {
 		log.Printf("Listening on %v", address)
 	}
 
+	// Global reference to passed mongodb client
+	mongoDBClientGlobal = mongodbClient
+
 	// Creates new gRPC server at specified port
 	server := grpc.NewServer()
 
 	// Register passed functions with implementations, must add each set of operations
 	packageOperations.RegisterPackageOperationServicesServer(server, &GRPCServer{})
+	projectOperations.RegisterProjectOperationServicesServer(server, &GRPCServer{})
 	fileTransfer.RegisterFileServiceServer(server, &GRPCServer{})
 
 	log.Print("Registered gRPC methods on server...")
