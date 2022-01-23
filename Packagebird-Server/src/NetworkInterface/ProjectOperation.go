@@ -10,8 +10,9 @@ import (
 func (server *GRPCServer) GetProject(context context.Context, request *projectOperations.ProjectRequest) (*projectOperations.ProjectResponse, error) {
 
 	projectName := request.GetName()
+	projectDescription := request.GetDescription()
 
-	err := databaseInterface.NewProject(*mongoDBClientGlobal, projectName, "Lorem Ipsum until I connect the right structure.")
+	err := databaseInterface.NewProject(*mongoDBClientGlobal, projectName, projectDescription)
 	if err != nil {
 		log.Printf("Error encountered attempting to create new project...")
 		return nil, err

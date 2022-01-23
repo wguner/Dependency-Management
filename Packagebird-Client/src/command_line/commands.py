@@ -104,12 +104,12 @@ def createpackage(ctx, debug):
 def createproject(ctx, name, description):
 
     # Check if project already present in server
-    request = ProjectOperations_pb2.ProjectRequest(name=name)
+    request = ProjectOperations_pb2.ProjectRequest(name=name, description=description)
     
     # Needs moved to discrete logical section
     with grpc.insecure_channel('localhost:50051') as channel:
         stub = ProjectOperations_pb2_grpc.ProjectOperationServicesStub(channel)
-        response = stub.GetProject(ProjectOperations_pb2.ProjectRequest(name=name))
+        response = stub.GetProject(request)
         if response.exist:
             click.echo(f"Project {name} already present on server. Please pick a different name.")
 

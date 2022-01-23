@@ -12,6 +12,7 @@ service ProjectOperationServices {
 // Project Request
 message ProjectRequest {
 	string name = 1;
+	string description = 2;
 }
 
 // Project Response

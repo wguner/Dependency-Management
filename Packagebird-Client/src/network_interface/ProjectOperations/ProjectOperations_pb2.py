@@ -3,7 +3,6 @@
 # source: ProjectOperations.proto
 """Generated protocol buffer code."""
 from google.protobuf import descriptor as _descriptor
-from google.protobuf import descriptor_pool as _descriptor_pool
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
@@ -14,12 +13,92 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x17ProjectOperations.proto\x12\x11ProjectOperations\"\x1e\n\x0eProjectRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\" \n\x0fProjectResponse\x12\r\n\x05\x65xist\x18\x01 \x01(\x08\x32o\n\x18ProjectOperationServices\x12S\n\nGetProject\x12!.ProjectOperations.ProjectRequest\x1a\".ProjectOperations.ProjectResponseB\x15Z\x13./ProjectOperationsb\x06proto3')
+DESCRIPTOR = _descriptor.FileDescriptor(
+  name='ProjectOperations.proto',
+  package='ProjectOperations',
+  syntax='proto3',
+  serialized_options=b'Z\023./ProjectOperations',
+  create_key=_descriptor._internal_create_key,
+  serialized_pb=b'\n\x17ProjectOperations.proto\x12\x11ProjectOperations\"3\n\x0eProjectRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\" \n\x0fProjectResponse\x12\r\n\x05\x65xist\x18\x01 \x01(\x08\x32o\n\x18ProjectOperationServices\x12S\n\nGetProject\x12!.ProjectOperations.ProjectRequest\x1a\".ProjectOperations.ProjectResponseB\x15Z\x13./ProjectOperationsb\x06proto3'
+)
 
 
 
-_PROJECTREQUEST = DESCRIPTOR.message_types_by_name['ProjectRequest']
-_PROJECTRESPONSE = DESCRIPTOR.message_types_by_name['ProjectResponse']
+
+_PROJECTREQUEST = _descriptor.Descriptor(
+  name='ProjectRequest',
+  full_name='ProjectOperations.ProjectRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='ProjectOperations.ProjectRequest.name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='description', full_name='ProjectOperations.ProjectRequest.description', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=46,
+  serialized_end=97,
+)
+
+
+_PROJECTRESPONSE = _descriptor.Descriptor(
+  name='ProjectResponse',
+  full_name='ProjectOperations.ProjectResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='exist', full_name='ProjectOperations.ProjectResponse.exist', index=0,
+      number=1, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=99,
+  serialized_end=131,
+)
+
+DESCRIPTOR.message_types_by_name['ProjectRequest'] = _PROJECTREQUEST
+DESCRIPTOR.message_types_by_name['ProjectResponse'] = _PROJECTRESPONSE
+_sym_db.RegisterFileDescriptor(DESCRIPTOR)
+
 ProjectRequest = _reflection.GeneratedProtocolMessageType('ProjectRequest', (_message.Message,), {
   'DESCRIPTOR' : _PROJECTREQUEST,
   '__module__' : 'ProjectOperations_pb2'
@@ -34,15 +113,32 @@ ProjectResponse = _reflection.GeneratedProtocolMessageType('ProjectResponse', (_
   })
 _sym_db.RegisterMessage(ProjectResponse)
 
-_PROJECTOPERATIONSERVICES = DESCRIPTOR.services_by_name['ProjectOperationServices']
-if _descriptor._USE_C_DESCRIPTORS == False:
 
-  DESCRIPTOR._options = None
-  DESCRIPTOR._serialized_options = b'Z\023./ProjectOperations'
-  _PROJECTREQUEST._serialized_start=46
-  _PROJECTREQUEST._serialized_end=76
-  _PROJECTRESPONSE._serialized_start=78
-  _PROJECTRESPONSE._serialized_end=110
-  _PROJECTOPERATIONSERVICES._serialized_start=112
-  _PROJECTOPERATIONSERVICES._serialized_end=223
+DESCRIPTOR._options = None
+
+_PROJECTOPERATIONSERVICES = _descriptor.ServiceDescriptor(
+  name='ProjectOperationServices',
+  full_name='ProjectOperations.ProjectOperationServices',
+  file=DESCRIPTOR,
+  index=0,
+  serialized_options=None,
+  create_key=_descriptor._internal_create_key,
+  serialized_start=133,
+  serialized_end=244,
+  methods=[
+  _descriptor.MethodDescriptor(
+    name='GetProject',
+    full_name='ProjectOperations.ProjectOperationServices.GetProject',
+    index=0,
+    containing_service=None,
+    input_type=_PROJECTREQUEST,
+    output_type=_PROJECTRESPONSE,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+])
+_sym_db.RegisterServiceDescriptor(_PROJECTOPERATIONSERVICES)
+
+DESCRIPTOR.services_by_name['ProjectOperationServices'] = _PROJECTOPERATIONSERVICES
+
 # @@protoc_insertion_point(module_scope)
