@@ -19,11 +19,11 @@ func main() {
 		log.Fatalf("Error encountered on server connecting to MongoDB:\n%v\nShutting down...", err)
 	}
 
-	if err := NetworkInterface.PackagebirdServerStart(ADDRESS); err != nil {
+	if err := NetworkInterface.PackagebirdServerStart(ADDRESS, mongoDBClient); err != nil {
 		log.Fatalf("Error encountered on gRPC server:\n%v\nShutting down...", err)
 	}
 
-	err = DatabaseInterface.MongoDBServerDisconnect(*mongoDBClient);
+	err = DatabaseInterface.MongoDBServerDisconnect(*mongoDBClient)
 	if err != nil {
 		log.Fatalf("Error encountered on server disconnecting from MongoDB:\n%v\nShutting down...", err)
 	}
