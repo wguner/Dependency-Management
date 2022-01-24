@@ -10,7 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func NewProject(client mongo.Client, name string, description string) error {
+func NewProject(client mongo.Client, name string, description string) (bool, error) {
 	// First establish connection to database and collection
 	collection := client.Database("packagebird").Collection("project")
 
@@ -30,18 +30,18 @@ func NewProject(client mongo.Client, name string, description string) error {
 
 			if insertErr != nil {
 				log.Printf("Error encountered with inserting new project into database...")
-				return insertErr
+				return false, insertErr
 			}
 
-			return nil
+			return true, nil
 		} else {
 			// Unknown error encountered
 			log.Printf("Error encountered searching for project in database...")
-			return err
+			return false, err
 		}
 	} else {
 		// Project already exist
 		log.Printf("Project with name %v already exist in database...", name)
-		return nil
+		return false, nil
 	}
 }

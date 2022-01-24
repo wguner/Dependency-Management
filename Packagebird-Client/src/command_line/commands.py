@@ -13,6 +13,8 @@ from src.network_interface.FileTransfer.fileserver_client import FileTransfer
 import src.network_interface.ProjectOperations.ProjectOperations_pb2 as ProjectOperations_pb2
 import src.network_interface.ProjectOperations.ProjectOperations_pb2_grpc as ProjectOperations_pb2_grpc
 
+import src.filesystem_interface.filesystem_interface
+
 # Entry-point for the command line interface. Appears as 'packagebird'.
 @click.group()
 @click.pass_context
@@ -60,35 +62,25 @@ def addpackage(ctx, name, version):
 @click.option('--debug', is_flag=True, help='Debug option for')
 @click.pass_context
 def createpackage(ctx, debug):
-    # Get packages and location
-    project_name = os.path.basename(os.getcwd())
-    version = 1
-    message = f'Project Name: {project_name}, version: {version}'
+    
+    # Close if called on directory not formatted as project
+    if not FilesystemInterface.check_if_project_dir():
+        click.echo('Directory is not configured as project. Please either configure as project or navigate to configured directory.')
+        return
+    
+    project_configuration = FilesystemInterface.get_project_config()
+
+    # Get name and version, 
+    project_name = project_configuration['name']
+    project_version = project_configuration['version']
+    message = f'Creating package from project: {project_name}, version: {project_version}'
     print(message)
 
     # Package name
-    package_name = f'{project_name}-v{version}.tar.gz'
+    package_name = f'{project_name}-v{project_version}.tar.gz'
 
-    # Add the contents
-    with tarfile.open(package_name, 'w:gz', format=tarfile.GNU_FORMAT) as tar:
-        for directory, directorynames, filenames in os.walk("."):
-            for file in filenames:
-                if (debug):
-                    click.echo(f'Directory Visited: {directory}')
-
-                if "/packages/" not in directory and "\\packages\\" not in directory and "./packages/" not in directory:
-                    if (debug):
-                        click.echo(f'Visited directory and file not in packages. File reached is {file}.')
-                    
-                    if file != package_name:
-                        tar.add(os.path.join(directory, file))
-                    else:
-                        if (debug):
-                            click.echo(f'File {file} is the temp client tar file, should not be bundled.')
-                elif debug:
-                    click.echo(f'File visited in packages directory! Directory is {directory}, file is {file}')
-                    
-
+    # Create compressed archive of file contents
+    FilesystemInterface.make_archive(project_name, project_version)
 
     # Upload to server
     if (not debug):
@@ -112,6 +104,7 @@ def createproject(ctx, name, description):
         response = stub.GetProject(request)
         if response.exist:
             click.echo(f"Project {name} already present on server. Please pick a different name.")
+            return
 
     # Create the directory or notify user directory already present
     if FilesystemInterface.create_dir(name):

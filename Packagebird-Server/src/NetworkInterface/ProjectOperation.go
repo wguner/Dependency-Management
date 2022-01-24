@@ -12,10 +12,15 @@ func (server *GRPCServer) GetProject(context context.Context, request *projectOp
 	projectName := request.GetName()
 	projectDescription := request.GetDescription()
 
-	err := databaseInterface.NewProject(*mongoDBClientGlobal, projectName, projectDescription)
+	createdProject, err := databaseInterface.NewProject(*mongoDBClientGlobal, projectName, projectDescription)
 	if err != nil {
 		log.Printf("Error encountered attempting to create new project...")
 		return nil, err
 	}
-	return &projectOperations.ProjectResponse{}, nil
+
+	if createdProject {
+		return &projectOperations.ProjectResponse{Exist: false}, nil
+	} else {
+		return &projectOperations.ProjectResponse{Exist: true}, nil
+	}
 }

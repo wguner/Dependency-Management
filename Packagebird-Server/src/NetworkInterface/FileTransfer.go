@@ -5,11 +5,13 @@ import (
 	"io"
 	"log"
 	"os"
+	DatabaseInterface "packagebird-server/src/DatabaseInterface"
 	fileTransfer "packagebird-server/src/NetworkInterface/FileTransfer"
+	"packagebird-server/src/structures"
 )
 
 const (
-	PACKAGEPATH = "C:\\ElishaAguilera\\Documents\\"
+	PACKAGEPATH = "C:\\Users\\ElishaAguilera\\Documents\\packages"
 	CHUNKSIZE   = 64 * 1024
 )
 
@@ -18,7 +20,7 @@ func (server *GRPCServer) Download(request *fileTransfer.Request, fileStream fil
 	log.Printf("Received request for package %v", request.GetBody())
 
 	// Get direct path to file
-	filepath := fmt.Sprintf("%v/packages/%v", PACKAGEPATH, request.GetBody())
+	filepath := fmt.Sprintf("%vpackages\\%v", PACKAGEPATH, request.GetBody())
 
 	// Open file and close when finished, or catch error
 	file, err := os.Open(filepath)
@@ -72,7 +74,7 @@ func (server *GRPCServer) Upload(fileStream fileTransfer.FileService_UploadServe
 	log.Printf("Received request to upload file from client to server...")
 
 	// Creates the tempory directory if not already present
-	var filepath = fmt.Sprintf("%v/packages", PACKAGEPATH)
+	var filepath = PACKAGEPATH // fmt.Sprintf("%vpackages", PACKAGEPATH)
 
 	_, err := os.Stat(filepath)
 	if os.IsNotExist(err) {
@@ -89,7 +91,7 @@ func (server *GRPCServer) Upload(fileStream fileTransfer.FileService_UploadServe
 	filename := chunk.GetName()
 
 	// Create the temp file to be written to
-	file, err := os.Create(filepath + "/" + filename)
+	file, err := os.Create(filepath + "\\" + filename)
 
 	// If error encountered, return out. Else, progress to writing to the file
 	if err != nil {
@@ -125,14 +127,30 @@ func (server *GRPCServer) Upload(fileStream fileTransfer.FileService_UploadServe
 		}
 	}
 
+	entry := structures.Package{
+		Name:    filename,
+		Version: 0,
+	}
+	_, err = DatabaseInterface.NewPackage(*mongoDBClientGlobal, entry)
+
+	var responseFileName string
+	var message *fileTransfer.Response
+
+	// Respond to client
+	if err != nil {
+		responseFileName = fmt.Sprintf("File %v uploaded successfully...", filename)
+	} else {
+		responseFileName = fmt.Sprintf("File %v did not upload successfully due to database error...", filename)
+	}
+
 	// Respond to client informing of success
-	responseFileName := fmt.Sprintf("File %v uploaded successfully...", filename)
-	message := &fileTransfer.Response{
+	message = &fileTransfer.Response{
 		Body: responseFileName,
 	}
 
 	// Inform client of success, close operation
 	fileStream.SendAndClose(message)
-	log.Printf("File upload operation completed successfully...")
+
+	log.Printf("File upload operation completed...")
 	return nil
 }
