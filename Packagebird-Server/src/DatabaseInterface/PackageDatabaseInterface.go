@@ -62,6 +62,27 @@ func DeletePackage(client mongo.Client, newPackage structures.Package) (bool, er
 		log.Printf("Error encountered deleting a package in database")
 		return false, err
 	}
+	return false, nil
+}
+
+
+// Deletes all matching documents
+func DeleteAllPackages(client mongo.Client, newPackage structures.Package) (bool, error) {
+	collection := client.Database("packagebird").Collection("packages")
+
+	filter := bson.M{
+		"$and": []bson.M{
+			{"name": newPackage.Name},
+			{"version": newPackage.Version},
+		},
+	}
+
+	_, err := (collection.DeleteMany(context.TODO(), filter))
+
+	if err != nil{
+		log.Printf("Error encountered deleting a package in database")
+		return false, err
+	}
 
 	//Return success without any error.
 	return false, nil
