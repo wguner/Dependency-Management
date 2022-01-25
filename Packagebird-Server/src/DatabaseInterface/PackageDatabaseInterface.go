@@ -45,7 +45,7 @@ func NewPackage(client mongo.Client, newPackage structures.Package) (bool, error
 	}
 }
 
-// Deletes a single document
+// Deletes the first document that matches the filter
 func DeletePackage(client mongo.Client, newPackage structures.Package) (bool, error) {
 	collection := client.Database("packagebird").Collection("packages")
 
