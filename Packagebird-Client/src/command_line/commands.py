@@ -14,6 +14,7 @@ import src.network_interface.ProjectOperations.ProjectOperations_pb2 as ProjectO
 import src.network_interface.ProjectOperations.ProjectOperations_pb2_grpc as ProjectOperations_pb2_grpc
 
 import src.filesystem_interface.filesystem_interface
+import src.network_interface.ServerUtils.ServerUtils as serverUtils
 
 # Entry-point for the command line interface. Appears as 'packagebird'.
 @click.group()
@@ -21,6 +22,10 @@ import src.filesystem_interface.filesystem_interface
 def cli(ctx):
     """Client utility for managing packages, is a group command for the subcommands below. Call --help on a subcommand to get further details."""
     # The entry point for the command line interface
+    # Should ping server from this point to check that there is a server to connect with at the specified point
+    if not serverUtils.ServerUtils.ping('127.0.0.1', '50051'):
+        exit(0)
+
 
 # Add package to the development directory
 @cli.command('addpackage', short_help='Adds a package to development directory packages subdirectory')
@@ -112,6 +117,4 @@ def createproject(ctx, name, description):
     else:
         click.echo(f"Directory {name} already present at location!")
         return
-    
-    
     pass

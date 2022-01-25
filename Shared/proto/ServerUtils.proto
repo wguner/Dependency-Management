@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option go_package = "./ServerUtils";
+
+package ServerUtils;
+
+// Services associated with utility operations
+service ServerUtilsServices {
+    rpc Ping(ClientInfo) returns (ServerInfo);
+}
+
+// Client information from the requesting party
+message ClientInfo {
+    string body = 1;
+}
+
+// Server information response to the requesting party
+message ServerInfo {
+    string body = 1;
+}

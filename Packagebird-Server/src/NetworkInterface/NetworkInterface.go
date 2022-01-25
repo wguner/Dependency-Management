@@ -7,6 +7,7 @@ import (
 	fileTransfer "packagebird-server/src/NetworkInterface/FileTransfer"
 	packageOperations "packagebird-server/src/NetworkInterface/PackageOperations"
 	projectOperations "packagebird-server/src/NetworkInterface/ProjectOperations"
+	serverUtils "packagebird-server/src/NetworkInterface/ServerUtils"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
@@ -17,6 +18,7 @@ type GRPCServer struct {
 	packageOperations.UnimplementedPackageOperationServicesServer
 	projectOperations.UnimplementedProjectOperationServicesServer
 	fileTransfer.UnimplementedFileServiceServer
+	serverUtils.UnimplementedServerUtilsServicesServer
 }
 
 // Global mongoDBClient reference
@@ -42,6 +44,7 @@ func PackagebirdServerStart(address string, mongodbClient *mongo.Client) error {
 	packageOperations.RegisterPackageOperationServicesServer(server, &GRPCServer{})
 	projectOperations.RegisterProjectOperationServicesServer(server, &GRPCServer{})
 	fileTransfer.RegisterFileServiceServer(server, &GRPCServer{})
+	serverUtils.RegisterServerUtilsServicesServer(server, &GRPCServer{})
 
 	log.Print("Registered gRPC methods on server...")
 
