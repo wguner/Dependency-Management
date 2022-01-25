@@ -45,12 +45,10 @@ func NewPackage(client mongo.Client, newPackage structures.Package) (bool, error
 	}
 }
 
+// Deletes a single document
 func DeletePackage(client mongo.Client, newPackage structures.Package) (bool, error) {
-
 	collection := client.Database("packagebird").Collection("packages")
 
-	// Check that duplicate package isn't already present
-	var result structures.Package
 	filter := bson.M{
 		"$and": []bson.M{
 			{"name": newPackage.Name},
@@ -58,11 +56,13 @@ func DeletePackage(client mongo.Client, newPackage structures.Package) (bool, er
 		},
 	}
 
-	err := collection.DeleteOne(context.TODO(), filter).Decode(&result)
-	if err != nil {
-		return err
+	_, err := (collection.DeleteOne(context.TODO(), filter))
+
+	if err != nil{
+		log.Printf("Error encountered deleting a package in database")
+		return false, err
 	}
+
 	//Return success without any error.
 	return false, nil
-
 }
