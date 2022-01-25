@@ -44,3 +44,25 @@ func NewPackage(client mongo.Client, newPackage structures.Package) (bool, error
 		return false, nil
 	}
 }
+
+func DeletePackage(client mongo.Client, newPackage structures.Package) (bool, error) {
+
+	collection := client.Database("packagebird").Collection("packages")
+
+	// Check that duplicate package isn't already present
+	var result structures.Package
+	filter := bson.M{
+		"$and": []bson.M{
+			{"name": newPackage.Name},
+			{"version": newPackage.Version},
+		},
+	}
+
+	err := collection.DeleteOne(context.TODO(), filter).Decode(&result)
+	if err != nil {
+		return err
+	}
+	//Return success without any error.
+	return false, nil
+
+}
