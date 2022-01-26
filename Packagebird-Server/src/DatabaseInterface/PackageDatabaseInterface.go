@@ -58,13 +58,12 @@ func DeletePackage(client mongo.Client, newPackage structures.Package) (bool, er
 
 	_, err := (collection.DeleteOne(context.TODO(), filter))
 
-	if err != nil{
+	if err != nil {
 		log.Printf("Error encountered deleting a package in database")
 		return false, err
 	}
-	return false, nil
+	return true, nil
 }
-
 
 // Deletes all matching documents
 func DeleteAllPackages(client mongo.Client, newPackage structures.Package) (bool, error) {
@@ -79,11 +78,33 @@ func DeleteAllPackages(client mongo.Client, newPackage structures.Package) (bool
 
 	_, err := (collection.DeleteMany(context.TODO(), filter))
 
-	if err != nil{
+	if err != nil {
 		log.Printf("Error encountered deleting a package in database")
 		return false, err
 	}
 
 	//Return success without any error.
-	return false, nil
+	return true, nil
+}
+
+func LookupPackage(client mongo.Client, newPackage structures.Package) (bool, error) {
+	collection := client.Database("packagebird").Collection("packages")
+
+	var result structures.Package
+	filter := bson.M{
+		"$and": []bson.M{
+			{"name": newPackage.Name},
+			{"version": newPackage.Version},
+		},
+	}
+
+	err := collection.FindOne(context.TODO(), filter).Decode(&result)
+	if err == mongo.ErrNoDocuments {
+		log.Printf("Package with name %v is in the database", newPackage.Name)
+		return true, nil
+	} else {
+		// Find error encountered
+		log.Printf("Error encountered searching for package in database")
+		return false, err
+	}
 }
