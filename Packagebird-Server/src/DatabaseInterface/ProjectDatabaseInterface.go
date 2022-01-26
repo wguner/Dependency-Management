@@ -45,3 +45,17 @@ func NewProject(client mongo.Client, name string, description string) (bool, err
 		return false, nil
 	}
 }
+
+func LookupProject(client mongo.Client, name string, description string) (bool, error) {
+	collection := client.Database("packagebird").Collection("packages")
+
+	_, err := collection.Find(context.TODO(), bson.D{primitive.E{Key: "name", Value: name}})
+	if err == mongo.ErrNoDocuments {
+		log.Printf("Project with name %v is in the database", name)
+		return true, nil
+	} else {
+		// Find error encountered
+		log.Printf("Error encountered searching for package in database")
+		return false, err
+	}
+}
