@@ -20,7 +20,7 @@ func (server *GRPCServer) Download(request *fileTransfer.Request, fileStream fil
 	log.Printf("Received request for package %v", request.GetBody())
 
 	// Get direct path to file
-	filepath := fmt.Sprintf("%vpackages\\%v", PACKAGEPATH, request.GetBody())
+	filepath := fmt.Sprintf(PACKAGEPATH+"\\%v", request.GetBody())
 
 	// Open file and close when finished, or catch error
 	file, err := os.Open(filepath)
@@ -138,9 +138,10 @@ func (server *GRPCServer) Upload(fileStream fileTransfer.FileService_UploadServe
 
 	// Respond to client
 	if err != nil {
-		responseFileName = fmt.Sprintf("File %v uploaded successfully...", filename)
-	} else {
+		log.Printf("Encountered error while creating new package: %v", err)
 		responseFileName = fmt.Sprintf("File %v did not upload successfully due to database error...", filename)
+	} else {
+		responseFileName = fmt.Sprintf("File %v uploaded successfully...", filename)
 	}
 
 	// Respond to client informing of success

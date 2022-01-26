@@ -117,4 +117,8 @@ def createproject(ctx, name, description):
     else:
         click.echo(f"Directory {name} already present at location!")
         return
+    
+    # Formatting newly created project directory
+    FilesystemInterface.make_project_dir(name, 0)
+
     pass

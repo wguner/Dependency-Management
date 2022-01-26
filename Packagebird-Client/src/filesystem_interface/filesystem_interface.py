@@ -48,3 +48,25 @@ class FilesystemInterface(object):
                     if '/packages' not in dir and '\\packages\\' not in dir and './packages/' not in dir:
                         if file != package_name and file != 'projectconfig.json':
                             tar.add(os.path.join(dir,file))
+
+    # Adds appropriate subdirectories to freshly created project directory
+    @staticmethod
+    def make_project_dir(projectName, projectVersion):
+        
+        # Changes into project directory
+        os.chdir(projectName)
+
+        # Creates the packages subdirectory
+        os.mkdir('packages')
+
+        # Creates the project config JSON file
+        config = {
+            "name": projectName,
+            "version": projectVersion
+        }
+
+        with open('projectconfig.json', 'w') as projectConfig:
+            json.dump(config, projectConfig)
+        
+        # Return to parent directory
+        os.chdir('..')
