@@ -7,7 +7,7 @@ type Package struct {
 	Authors      []string        `bson:"authors"`
 	Version      int64           `bson:"version"`
 	Source       string          `bson:"source"`       // Path to source code, binaries on disk for server
-	Dependencies []Package       `bson:"dependencies"` // Recursive reference to other packages
+	Dependencies []string        `bson:"dependencies"` // Recursive reference to other packages
 	Graph        DependencyGraph `bson:"graph,inline"`
 }
 

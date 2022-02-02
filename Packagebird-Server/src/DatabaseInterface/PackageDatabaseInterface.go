@@ -2,8 +2,11 @@ package DatabaseInterface
 
 import (
 	"context"
+	"fmt"
 	"log"
 	structures "packagebird-server/src/structures"
+	"strconv"
+	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -99,12 +102,127 @@ func LookupPackage(client mongo.Client, newPackage structures.Package) (bool, er
 	}
 
 	err := collection.FindOne(context.TODO(), filter).Decode(&result)
+
 	if err == mongo.ErrNoDocuments {
-		log.Printf("Package with name %v is in the database", newPackage.Name)
-		return true, nil
-	} else {
+		log.Printf("Document doesn't exist in database.")
+		return false, nil
+	} else if err != nil {
 		// Find error encountered
 		log.Printf("Error encountered searching for package in database")
 		return false, err
+	} else {
+		log.Printf("Package with name %v is in the database", newPackage.Name)
+		return true, nil
 	}
+}
+
+func GetPackageDependencies(client mongo.Client, newPackage structures.Package) ([]string, error) {
+	collection := client.Database("packagebird").Collection("packages")
+
+	var result structures.Package
+	var dependenciesList []string
+
+	filter := bson.M{
+		"$and": []bson.M{
+			{"name": newPackage.Name},
+			{"version": newPackage.Version},
+		},
+	}
+
+	err := collection.FindOne(context.TODO(), filter).Decode(&result)
+
+	if err == mongo.ErrNoDocuments {
+		log.Printf("Document doesn't exist in database.")
+		return nil, nil
+	} else if err != nil {
+		// Find error encountered
+		log.Printf("Error encountered searching for package in database")
+		return nil, err
+	}
+
+	// Iterate through dependencies, add item
+	for _, dependency := range result.Dependencies {
+		pstring := GetPackageNameVersion(dependency)
+		pname := pstring[0]
+		pversion := pstring[1]
+		itemString := fmt.Sprintf("%v-%v", pname, pversion)
+		dependenciesList = append(dependenciesList, itemString)
+	}
+
+	if err != nil {
+		log.Printf("Error encountered searching for dependencies")
+		return dependenciesList, err
+	}
+
+	// Successfully find all dependencies for package.
+	return dependenciesList, nil
+}
+
+func GetPackage(client mongo.Client, name string, version int) (structures.Package, error) {
+	collection := client.Database("packagebird").Collection("packages")
+	var result structures.Package
+	filter := bson.M{
+		"$and": []bson.M{
+			{"name": name},
+			{"version": version},
+		},
+	}
+
+	err := collection.FindOne(context.TODO(), filter).Decode(&result)
+	if err == mongo.ErrNoDocuments {
+		log.Printf("Document doesn't exist in database.")
+		return result, nil
+	} else if err != nil {
+		// Find error encountered
+		log.Printf("Error encountered searching for package in database")
+		return result, err
+	}
+
+	return result, nil
+}
+
+func GetPackageDependenciesRecurse(c mongo.Client, pname string, pversion int, l *[]string) []string {
+	// Gets package from database
+	p, err := GetPackage(c, pname, pversion)
+	if err != nil {
+		log.Printf("%v", err)
+		return nil
+	}
+
+	// Iterate over dependencies
+	for _, dep := range p.Dependencies {
+
+		// Generate package string address
+		pstring := GetPackageNameVersion(dep)
+		pname := pstring[0]
+		pversion, _ := strconv.Atoi(pstring[1])
+
+		// If list doesn't contain reference to package, add and recurse
+		if !contains(l, dep) {
+			*l = append(*l, dep)
+			ppackage, _ := GetPackage(c, pname, pversion)
+			if ppackage.Dependencies != nil {
+				GetPackageDependenciesRecurse(c, pname, pversion, l)
+			}
+		}
+	}
+
+	// Terminate branch when no more dependencies present
+	return *l
+}
+
+// Checks if the string contains a value
+func contains(list *[]string, value string) bool {
+	for _, i := range *list {
+		if i == value {
+			return true
+		}
+	}
+	return false
+}
+
+// Splits on the '-' character in a package string
+// Example: 'oreo-v1' becomes '['oreo', '1']'
+func GetPackageNameVersion(pstring string) []string {
+	return strings.Split(pstring, "-v")
 }

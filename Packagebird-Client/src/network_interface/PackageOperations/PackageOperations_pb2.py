@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=b'Z\023./PackageOperations',
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x17PackageOperations.proto\x12\x11PackageOperations\"\x14\n\x12PackageListRequest\"\x1b\n\x0bPackageList\x12\x0c\n\x04list\x18\x01 \x01(\t\")\n\x12PackageTestRequest\x12\x13\n\x0bpackagename\x18\x01 \x01(\t\"\'\n\x13PackageTestResponse\x12\x10\n\x08response\x18\x01 \x01(\t\"*\n\x13PackageBuildRequest\x12\x13\n\x0bpackagename\x18\x01 \x01(\t\"(\n\x14PackageBuildResponse\x12\x10\n\x08response\x18\x01 \x01(\t2\xb0\x02\n\x18PackageOperationServices\x12U\n\x0cListPackages\x12%.PackageOperations.PackageListRequest\x1a\x1e.PackageOperations.PackageList\x12\\\n\x0bTestPackage\x12%.PackageOperations.PackageTestRequest\x1a&.PackageOperations.PackageTestResponse\x12_\n\x0c\x42uildPackage\x12&.PackageOperations.PackageBuildRequest\x1a\'.PackageOperations.PackageBuildResponseB\x15Z\x13./PackageOperationsb\x06proto3'
+  serialized_pb=b'\n\x17PackageOperations.proto\x12\x11PackageOperations\"\x14\n\x12PackageListRequest\"\x1b\n\x0bPackageList\x12\x0c\n\x04list\x18\x01 \x01(\t\")\n\x12PackageTestRequest\x12\x13\n\x0bpackagename\x18\x01 \x01(\t\"\'\n\x13PackageTestResponse\x12\x10\n\x08response\x18\x01 \x01(\t\"*\n\x13PackageBuildRequest\x12\x13\n\x0bpackagename\x18\x01 \x01(\t\"(\n\x14PackageBuildResponse\x12\x10\n\x08response\x18\x01 \x01(\t\"%\n\x0ePackageRequest\x12\x13\n\x0bpackageitem\x18\x01 \x01(\t\"*\n\x13PackageListResponse\x12\x13\n\x0bpackageitem\x18\x01 \x03(\t2\x8d\x03\n\x18PackageOperationServices\x12U\n\x0cListPackages\x12%.PackageOperations.PackageListRequest\x1a\x1e.PackageOperations.PackageList\x12\\\n\x0bTestPackage\x12%.PackageOperations.PackageTestRequest\x1a&.PackageOperations.PackageTestResponse\x12_\n\x0c\x42uildPackage\x12&.PackageOperations.PackageBuildRequest\x1a\'.PackageOperations.PackageBuildResponse\x12[\n\x0eGetPackageList\x12!.PackageOperations.PackageRequest\x1a&.PackageOperations.PackageListResponseB\x15Z\x13./PackageOperationsb\x06proto3'
 )
 
 
@@ -209,12 +209,78 @@ _PACKAGEBUILDRESPONSE = _descriptor.Descriptor(
   serialized_end=265,
 )
 
+
+_PACKAGEREQUEST = _descriptor.Descriptor(
+  name='PackageRequest',
+  full_name='PackageOperations.PackageRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='packageitem', full_name='PackageOperations.PackageRequest.packageitem', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=267,
+  serialized_end=304,
+)
+
+
+_PACKAGELISTRESPONSE = _descriptor.Descriptor(
+  name='PackageListResponse',
+  full_name='PackageOperations.PackageListResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='packageitem', full_name='PackageOperations.PackageListResponse.packageitem', index=0,
+      number=1, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=306,
+  serialized_end=348,
+)
+
 DESCRIPTOR.message_types_by_name['PackageListRequest'] = _PACKAGELISTREQUEST
 DESCRIPTOR.message_types_by_name['PackageList'] = _PACKAGELIST
 DESCRIPTOR.message_types_by_name['PackageTestRequest'] = _PACKAGETESTREQUEST
 DESCRIPTOR.message_types_by_name['PackageTestResponse'] = _PACKAGETESTRESPONSE
 DESCRIPTOR.message_types_by_name['PackageBuildRequest'] = _PACKAGEBUILDREQUEST
 DESCRIPTOR.message_types_by_name['PackageBuildResponse'] = _PACKAGEBUILDRESPONSE
+DESCRIPTOR.message_types_by_name['PackageRequest'] = _PACKAGEREQUEST
+DESCRIPTOR.message_types_by_name['PackageListResponse'] = _PACKAGELISTRESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 PackageListRequest = _reflection.GeneratedProtocolMessageType('PackageListRequest', (_message.Message,), {
@@ -259,6 +325,20 @@ PackageBuildResponse = _reflection.GeneratedProtocolMessageType('PackageBuildRes
   })
 _sym_db.RegisterMessage(PackageBuildResponse)
 
+PackageRequest = _reflection.GeneratedProtocolMessageType('PackageRequest', (_message.Message,), {
+  'DESCRIPTOR' : _PACKAGEREQUEST,
+  '__module__' : 'PackageOperations_pb2'
+  # @@protoc_insertion_point(class_scope:PackageOperations.PackageRequest)
+  })
+_sym_db.RegisterMessage(PackageRequest)
+
+PackageListResponse = _reflection.GeneratedProtocolMessageType('PackageListResponse', (_message.Message,), {
+  'DESCRIPTOR' : _PACKAGELISTRESPONSE,
+  '__module__' : 'PackageOperations_pb2'
+  # @@protoc_insertion_point(class_scope:PackageOperations.PackageListResponse)
+  })
+_sym_db.RegisterMessage(PackageListResponse)
+
 
 DESCRIPTOR._options = None
 
@@ -269,8 +349,8 @@ _PACKAGEOPERATIONSERVICES = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=268,
-  serialized_end=572,
+  serialized_start=351,
+  serialized_end=748,
   methods=[
   _descriptor.MethodDescriptor(
     name='ListPackages',
@@ -299,6 +379,16 @@ _PACKAGEOPERATIONSERVICES = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_PACKAGEBUILDREQUEST,
     output_type=_PACKAGEBUILDRESPONSE,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='GetPackageList',
+    full_name='PackageOperations.PackageOperationServices.GetPackageList',
+    index=3,
+    containing_service=None,
+    input_type=_PACKAGEREQUEST,
+    output_type=_PACKAGELISTRESPONSE,
     serialized_options=None,
     create_key=_descriptor._internal_create_key,
   ),

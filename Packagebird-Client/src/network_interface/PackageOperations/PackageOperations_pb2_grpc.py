@@ -30,6 +30,11 @@ class PackageOperationServicesStub(object):
                 request_serializer=PackageOperations__pb2.PackageBuildRequest.SerializeToString,
                 response_deserializer=PackageOperations__pb2.PackageBuildResponse.FromString,
                 )
+        self.GetPackageList = channel.unary_unary(
+                '/PackageOperations.PackageOperationServices/GetPackageList',
+                request_serializer=PackageOperations__pb2.PackageRequest.SerializeToString,
+                response_deserializer=PackageOperations__pb2.PackageListResponse.FromString,
+                )
 
 
 class PackageOperationServicesServicer(object):
@@ -54,6 +59,12 @@ class PackageOperationServicesServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetPackageList(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_PackageOperationServicesServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -71,6 +82,11 @@ def add_PackageOperationServicesServicer_to_server(servicer, server):
                     servicer.BuildPackage,
                     request_deserializer=PackageOperations__pb2.PackageBuildRequest.FromString,
                     response_serializer=PackageOperations__pb2.PackageBuildResponse.SerializeToString,
+            ),
+            'GetPackageList': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetPackageList,
+                    request_deserializer=PackageOperations__pb2.PackageRequest.FromString,
+                    response_serializer=PackageOperations__pb2.PackageListResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -131,5 +147,22 @@ class PackageOperationServices(object):
         return grpc.experimental.unary_unary(request, target, '/PackageOperations.PackageOperationServices/BuildPackage',
             PackageOperations__pb2.PackageBuildRequest.SerializeToString,
             PackageOperations__pb2.PackageBuildResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetPackageList(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/PackageOperations.PackageOperationServices/GetPackageList',
+            PackageOperations__pb2.PackageRequest.SerializeToString,
+            PackageOperations__pb2.PackageListResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

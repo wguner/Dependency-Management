@@ -9,6 +9,7 @@ service PackageOperationServices {
     rpc ListPackages(PackageListRequest) returns (PackageList);
     rpc TestPackage(PackageTestRequest) returns (PackageTestResponse);
     rpc BuildPackage(PackageBuildRequest) returns (PackageBuildResponse);
+    rpc GetPackageList(PackageRequest) returns (PackageListResponse);
 }
 
 // Package Listing Messages
@@ -34,4 +35,14 @@ message PackageBuildRequest {
 
 message PackageBuildResponse {
     string response = 1;
+}
+
+// Incoming package request, generate list of depedencies, return list
+message PackageRequest {
+    string packageitem = 1;
+}
+
+// Outgoing package list, list of dependencies
+message PackageListResponse {
+    repeated string packageitem = 1;
 }

@@ -1,3 +1,5 @@
+from ast import Str
+from posixpath import split
 import click
 import sys
 import os
@@ -6,8 +8,8 @@ import grpc
 
 from src.filesystem_interface.filesystem_interface import FilesystemInterface
 
-import src.network_interface.PackageOperations.PackageOperations_pb2
-import src.network_interface.PackageOperations.PackageOperations_pb2_grpc
+import src.network_interface.PackageOperations.PackageOperations_pb2 as packageOperations
+import src.network_interface.PackageOperations.PackageOperations_pb2_grpc as packageOperationsGRPC
 from src.network_interface.FileTransfer.fileserver_client import FileTransfer
 
 import src.network_interface.ProjectOperations.ProjectOperations_pb2 as ProjectOperations_pb2
@@ -38,28 +40,51 @@ def addpackage(ctx, name, version):
         click.echo("Creating packages directory...")
         os.mkdir('packages')
     os.chdir('packages')
-    
-    # Create Package Directory
-    os.mkdir(f'{name}')
-    os.chdir(f'{name}')
 
     # Download the archived package
     fileservice = FileTransfer()
-    request_string = f'{name}-v{version}.tar.gz'
-    fileservice.download('127.0.0.1', '50051', f'{request_string}')
+    request_string = f'{name}-v{version}'
 
-    # Extract the contents
-    with tarfile.open(request_string, 'r:gz') as archive:
-        try:
-            archive.extractall(path='.')
-        except tarfile.ReadError:
-            click.echo('Empty file found.')
+    # Make a request for a package-list
+    # grpc packagelist service here
+    stub = packageOperationsGRPC.PackageOperationServicesStub(grpc.insecure_channel('127.0.0.1:50051'))
+    packageList = stub.GetPackageList(packageOperations.PackageRequest(packageitem=request_string))
+
+    # Debug output
+    # print(f'Response from server: {packageList.packageitem}')
+
+    # Add the originally requested package
+    packageList.packageitem.append(request_string)
     
-    # Remove the archive file
-    os.remove(request_string)
+    # Iterate through list of returned packages
+    for packageListItem in packageList.packageitem:
+        pstring = packageListItem.split('-v')
+        itemName = pstring[0]
+        itemVersion = pstring[1]
+    
+        itemRequestString = f'{itemName}-v{itemVersion}.tar.gz'
 
-    # Move back to the development root directory
-    os.chdir('..')
+        # Create Package Directory
+        os.mkdir(f'{itemName}')
+        os.chdir(f'{itemName}')
+    
+        # Download the package source into the package directory
+        fileservice.download('127.0.0.1', '50051', f'{itemRequestString}')
+    
+        # Extract the contents
+        with tarfile.open(itemRequestString, 'r:gz') as archive:
+            try:
+                archive.extractall(path='.')
+            except tarfile.ReadError:
+                click.echo('Empty file found.')
+    
+        # Remove the archive file
+        os.remove(itemRequestString)
+
+        # Move back to package directory
+        os.chdir('..')
+    
+    # change back into project root directory
     os.chdir('..')
 
 # Create package from a development directory
