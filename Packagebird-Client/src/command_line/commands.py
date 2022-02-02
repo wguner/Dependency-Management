@@ -35,6 +35,11 @@ def cli(ctx):
 @click.option('-v', '--version', 'version')
 @click.pass_context
 def addpackage(ctx, name, version):
+    # bad idea approaching...
+    # get project name
+    pr_config = FilesystemInterface.get_project_config()
+    pr_name = pr_config["name"]
+
     # Makes the packages directory
     if not os.path.isdir('packages'):
         click.echo("Creating packages directory...")
@@ -43,7 +48,9 @@ def addpackage(ctx, name, version):
 
     # Download the archived package
     fileservice = FileTransfer()
-    request_string = f'{name}-v{version}'
+
+    # add project name here
+    request_string = f'{pr_name}-v{name}-v{version}'
 
     # Make a request for a package-list
     # grpc packagelist service here
@@ -52,9 +59,10 @@ def addpackage(ctx, name, version):
 
     # Debug output
     # print(f'Response from server: {packageList.packageitem}')
+    package_request = f'{name}-v{version}'
 
     # Add the originally requested package
-    packageList.packageitem.append(request_string)
+    packageList.packageitem.append(package_request)
     
     # Iterate through list of returned packages
     for packageListItem in packageList.packageitem:

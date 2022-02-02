@@ -47,15 +47,42 @@ func NewProject(client mongo.Client, name string, description string) (bool, err
 }
 
 func LookupProject(client mongo.Client, name string, description string) (bool, error) {
-	collection := client.Database("packagebird").Collection("packages")
+	collection := client.Database("packagebird").Collection("project")
 
+	log.Printf("Looking up project with name: %v", name)
 	_, err := collection.Find(context.TODO(), bson.D{primitive.E{Key: "name", Value: name}})
+
 	if err == mongo.ErrNoDocuments {
-		log.Printf("Project with name %v is in the database", name)
+		log.Printf("Project with name %v is not in the database", name)
+		return false, nil
+	} else if err == nil {
 		return true, nil
 	} else {
 		// Find error encountered
-		log.Printf("Error encountered searching for package in database")
+		log.Printf("Error encountered searching for project in database")
 		return false, err
+	}
+}
+
+func UpdateProject(c mongo.Client, name string, dependencies []string) error {
+	collection := c.Database("packagebird").Collection("project")
+
+	var result structures.Project
+	filter := bson.M{"name": name}
+
+	err := collection.FindOne(context.TODO(), filter).Decode(&result)
+	if err != nil {
+		log.Printf("%v", err)
+		return err
+	}
+	result.Packages = append(result.Packages, dependencies...)
+
+	_, err = collection.UpdateOne(context.TODO(), bson.M{"name": name}, bson.D{{"$set", bson.M{"dependencies": result.Packages}}})
+	if err != nil {
+		log.Printf("%v", err)
+		return err
+	} else {
+		log.Printf("Updated dependencies for project: %v", name)
+		return nil
 	}
 }

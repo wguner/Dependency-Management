@@ -12,12 +12,12 @@ type Package struct {
 }
 
 type Project struct {
-	Name          string    `bson:"name"`
-	Description   string    `bson:"description"`
-	UUID          string    `bson:"uuid"`
-	LatestVersion int64     `bson:"latest_version"`
-	Packages      []Package `bson:"packages"`
-	Source        string    `bson:"source"`
+	Name          string   `bson:"name"`
+	Description   string   `bson:"description"`
+	UUID          string   `bson:"uuid"`
+	LatestVersion int64    `bson:"latest_version"`
+	Packages      []string `bson:"packages"`
+	Source        string   `bson:"source"`
 }
 
 type Team struct {
