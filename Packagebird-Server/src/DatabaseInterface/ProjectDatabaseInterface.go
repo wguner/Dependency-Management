@@ -86,3 +86,31 @@ func UpdateProject(c mongo.Client, name string, dependencies []string) error {
 		return nil
 	}
 }
+
+func IncrementProjectVersion(c mongo.Client, name string) error {
+	collection := c.Database("packagebird").Collection("project")
+	project, err := GetProject(*collection, name)
+	if err != nil {
+		log.Printf("Cannot find and retrieve project %v from MongoDB", name)
+		return err
+	}
+
+	version := project.LatestVersion + 1
+	_, err = collection.UpdateOne(context.TODO(), bson.M{"name": name}, bson.D{{"$set", bson.M{"version": version}}})
+
+	if err != nil {
+		log.Printf("Error incrementing project %v version: %v", name, err)
+		return err
+	}
+	return nil
+}
+
+func GetProject(c mongo.Collection, name string) (*structures.Project, error) {
+	var result structures.Project
+	filter := bson.M{"name": name}
+	if err := c.FindOne(context.TODO(), filter).Decode(&result); err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}

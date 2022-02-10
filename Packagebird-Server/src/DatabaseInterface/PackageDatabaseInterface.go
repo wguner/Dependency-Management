@@ -36,6 +36,12 @@ func NewPackage(client mongo.Client, newPackage structures.Package) (bool, error
 			return false, iErr
 		}
 
+		// Increment version number of project
+		if err := IncrementProjectVersion(client, newPackage.Name); err != nil {
+			log.Printf("Error countered with incremented project version attached to package %v", newPackage.Name)
+			return false, err
+		}
+
 		return true, nil
 	} else if err != nil {
 		// Find error encountered
