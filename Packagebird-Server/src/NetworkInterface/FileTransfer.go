@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	PACKAGEPATH = "C:\\Users\\ElishaAguilera\\Documents\\packages"
+	PACKAGEPATH = `C:\Users\ElishaAguilera\Documents\packages`
 	CHUNKSIZE   = 64 * 1024
 )
 

@@ -126,6 +126,14 @@ def createpackage(ctx, debug):
         fileservice.upload('127.0.0.1', '50051', package_name)
     os.remove(package_name)
 
+# Builds package on the server
+@cli.command('buildpackage', short_help='Builds a package on the server and relays the result')
+@click.option('-n', '--n', help='Name of package being built')
+@click.option('-v', '--version', help='Version of package being built')
+@click.pass_context
+def buildpackage(ctx, name, version):
+    pass
+
 # Create project both locally and on the remote server
 @cli.command('createproject', short_help='Creates a project in the local development environment and remotely on the server')
 @click.option('-n', '--name', help='Name of project being created')
