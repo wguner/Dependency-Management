@@ -45,7 +45,7 @@ class FilesystemInterface(object):
         with tarfile.open(package_name, 'w:gz', format=tarfile.GNU_FORMAT) as tar:
             for dir, dirs, files in os.walk("."):
                 for file in files:
-                    if '/packages' not in dir and '\\packages\\' not in dir and './packages/' not in dir:
+                    if '/packages' not in dir and '\\packages\\' not in dir and './packages/' not in dir and '/../' not in dir:
                         if file != package_name and file != 'projectconfig.json':
                             tar.add(os.path.join(dir,file))
 

@@ -22,6 +22,15 @@ func TestUnbundlePackage(t *testing.T) {
 	}
 }
 
+func TestZipSlip(t *testing.T) {
+	t.Logf("Testing Zip-Slip vulnerability")
+	PackageName := "MaliciousPackage"
+	err := UnbundlePackage(PackageName)
+	if err != nil {
+		t.Log(err)
+	}
+}
+
 func TestRunBuildCommand(t *testing.T) {
 	t.Logf("Testing RunBuildCommand()")
 	PackageName := "Oreo"
