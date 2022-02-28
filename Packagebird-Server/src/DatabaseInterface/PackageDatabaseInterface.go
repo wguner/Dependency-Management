@@ -10,6 +10,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func NewPackage(client mongo.Client, newPackage structures.Package) (bool, error) {
@@ -164,7 +165,7 @@ func GetPackageDependencies(client mongo.Client, newPackage structures.Package) 
 	return dependenciesList, nil
 }
 
-func GetPackage(client mongo.Client, name string, version int) (structures.Package, error) {
+func GetPackage(client mongo.Client, name string, version int) (*structures.Package, error) {
 	collection := client.Database("packagebird").Collection("packages")
 	var result structures.Package
 	filter := bson.M{
@@ -177,14 +178,14 @@ func GetPackage(client mongo.Client, name string, version int) (structures.Packa
 	err := collection.FindOne(context.TODO(), filter).Decode(&result)
 	if err == mongo.ErrNoDocuments {
 		log.Printf("Document doesn't exist in database.")
-		return result, nil
+		return nil, err
 	} else if err != nil {
 		// Find error encountered
 		log.Printf("Error encountered searching for package in database")
-		return result, err
+		return nil, err
 	}
 
-	return result, nil
+	return &result, nil
 }
 
 func GetPackageDependenciesRecurse(c mongo.Client, pname string, pversion int, l *[]string) []string {
@@ -231,4 +232,76 @@ func contains(list *[]string, value string) bool {
 // Example: 'oreo-v1' becomes '['oreo', '1']'
 func GetPackageNameVersion(pstring string) []string {
 	return strings.Split(pstring, "-v")
+}
+
+func GetPackages(client mongo.Client) ([]string, error) {
+	option := options.Find().SetProjection(bson.D{{"name", 1}, {"_id", 0}})
+	collection := client.Database("packagebird").Collection("packages")
+
+	type PackageResults struct {
+		Names []string `bson:"name"`
+	}
+
+	var returns *PackageResults
+	cursor, err := collection.Find(context.TODO(), bson.D{}, option)
+	if err != nil {
+		log.Printf("Failed to retrieve list of packages")
+		return nil, err
+	}
+
+	cursor.All(context.TODO(), &returns)
+
+	for _, result := range returns.Names {
+		log.Printf("Listing package: %v\n", result)
+	}
+
+	return returns.Names, nil
+}
+
+func GetProjects(client mongo.Client) ([]string, error) {
+	collection := client.Database("packagebird").Collection("projects")
+	var results []structures.Project
+	var returns []string
+
+	cursor, err := collection.Find(context.TODO(), bson.D{{}}, nil)
+	if err != nil {
+		log.Printf("Failed to connect to database of projects")
+		return nil, err
+	}
+	for cursor.Next(context.TODO()) {
+		var project *structures.Project
+		err := cursor.Decode(project)
+		if err != nil {
+			log.Printf("Cannot decode to project struct")
+		}
+		results = append(results, *project)
+	}
+	for _, p := range results {
+		log.Printf("Found:\t%v", p.Name)
+		returns = append(returns, p.Name)
+	}
+	return returns, nil
+}
+
+func GetMembers(client mongo.Client) ([]string, error) {
+	option := options.Find().SetProjection(bson.D{{"name", 1}, {"_id", 0}})
+	collection := client.Database("packagebird").Collection("members")
+
+	type MemberResults struct {
+		Names []string `bson:"name"`
+	}
+
+	var returns *MemberResults
+	cursor, err := collection.Find(context.TODO(), bson.D{}, option)
+	if err != nil {
+		log.Printf("Failed to retrieve list of members")
+		return nil, err
+	}
+
+	cursor.All(context.TODO(), &returns)
+	for _, result := range returns.Names {
+		log.Printf("Listing Member: %v\n", result)
+	}
+
+	return returns.Names, nil
 }

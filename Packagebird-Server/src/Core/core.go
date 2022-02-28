@@ -6,10 +6,14 @@ import (
 	"log"
 	"os"
 	"packagebird-server/src/DatabaseInterface"
+	configFile "packagebird-server/src/config"
 	NetworkInterface "packagebird-server/src/networkinterface"
+	structures "packagebird-server/src/structures"
 
 	yaml "gopkg.in/yaml.v3"
 )
+
+var GlobalConfig *configFile.ConfigFile
 
 // Temporary constant for address
 const (
@@ -17,40 +21,38 @@ const (
 	MONGOURI = "mongodb://localhost:27017"
 )
 
-// Global configuration structure
-var config *ConfigFile
-
 // Entry-poin for the server application
 func main() {
 	// Loads from configuration file
-	config, err := setupConfigFile("config.yaml")
+	Config, err := setupConfigFile("config.yaml")
 	if err != nil {
 		log.Print(err)
 	}
 
-	mongoDBClient, err := DatabaseInterface.MongoDBServerConnect(config.DatabaseAddress)
+	// Set global package variable
+	configFile.Config = Config
+
+	// Setup Server subdirectories
+	if err := createServerSubdirectories(); err != nil {
+		log.Fatalf("Error encountered creating or finding required server subdirectories:\t%v\nShutting down...", err)
+	}
+
+	structures.GlobalMongoClient, err = DatabaseInterface.MongoDBServerConnect(Config.DatabaseAddress)
 	if err != nil {
 		log.Fatalf("Error encountered on server connecting to MongoDB:\n%v\nShutting down...", err)
 	}
 
-	if err := NetworkInterface.PackagebirdServerStart(config.ServerAddress, mongoDBClient); err != nil {
+	if err := NetworkInterface.PackagebirdServerStart(Config.ServerAddress, structures.GlobalMongoClient); err != nil {
 		log.Fatalf("Error encountered on gRPC server:\n%v\nShutting down...", err)
 	}
 
-	err = DatabaseInterface.MongoDBServerDisconnect(*mongoDBClient)
+	err = DatabaseInterface.MongoDBServerDisconnect(*structures.GlobalMongoClient)
 	if err != nil {
 		log.Fatalf("Error encountered on server disconnecting from MongoDB:\n%v\nShutting down...", err)
 	}
 }
 
-type ConfigFile struct {
-	PackageSourcePath string
-	ProjectSourcePath string
-	ServerAddress     string
-	DatabaseAddress   string
-}
-
-func setupConfigFile(path string) (*ConfigFile, error) {
+func setupConfigFile(path string) (*configFile.ConfigFile, error) {
 	// Check if configuration file exist
 	if _, err := os.Stat(path); err != nil {
 		// If not, create default configuration file
@@ -80,9 +82,9 @@ func createConfigFile(path string) error {
 	}
 
 	// Default packages, projects directory in same working directory as server
-	file := ConfigFile{
-		PackageSourcePath: fmt.Sprintf("%v\\packages", wd),
-		ProjectSourcePath: fmt.Sprintf("%v\\projects", wd),
+	file := configFile.ConfigFile{
+		PackageSourcePath: fmt.Sprintf("%v/packages", wd),
+		ProjectSourcePath: fmt.Sprintf("%v/projects", wd),
 		ServerAddress:     "127.0.0.1:50051",
 		DatabaseAddress:   "mongodb://localhost:27017",
 	}
@@ -104,7 +106,7 @@ func createConfigFile(path string) error {
 	return nil
 }
 
-func getConfigFile(path string) (*ConfigFile, error) {
+func getConfigFile(path string) (*configFile.ConfigFile, error) {
 	// Read contents of local file
 	file, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -113,7 +115,7 @@ func getConfigFile(path string) (*ConfigFile, error) {
 	}
 
 	// Create structure mapping
-	configFile := ConfigFile{}
+	configFile := configFile.ConfigFile{}
 
 	// Parse file as configuration file in YAML format
 	err = yaml.Unmarshal(file, &configFile)
@@ -123,4 +125,36 @@ func getConfigFile(path string) (*ConfigFile, error) {
 	}
 
 	return &configFile, nil
+}
+
+// Creates expected subdirectories for server use if not already present
+func createServerSubdirectories() error {
+	subdirectories := []string{"projects", "packages", "builds", "tmp"}
+	if err := createSubdirectories(subdirectories); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Creates subdirectories within working directory if not already present
+func createSubdirectories(paths []string) error {
+	for _, path := range paths {
+		if err := createSubdirectory(path); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Creates subdirectory within working directory if not already present
+func createSubdirectory(path string) error {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		os.Mkdir(path, 0755)
+		return nil
+	} else if !os.IsNotExist(err) {
+		return nil
+	} else {
+		log.Print(err)
+		return err
+	}
 }

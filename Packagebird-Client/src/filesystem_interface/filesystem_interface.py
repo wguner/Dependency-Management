@@ -45,9 +45,22 @@ class FilesystemInterface(object):
         with tarfile.open(package_name, 'w:gz', format=tarfile.GNU_FORMAT) as tar:
             for dir, dirs, files in os.walk("."):
                 for file in files:
+                    # Special check for zip-slip vulnerability
                     if '/packages' not in dir and '\\packages\\' not in dir and './packages/' not in dir and '/../' not in dir:
                         if file != package_name and file != 'projectconfig.json':
                             tar.add(os.path.join(dir,file))
+    
+    # Project source alternative
+    @staticmethod
+    def make_archive(projectName):
+        fileName = f'{projectName}.tar.gz'
+        with tarfile.open(fileName, 'w:gz', format=tarfile.GNU_FORMAT) as tar:
+            for dir, dirs, files in os.walk("."):
+                for file in files:
+                    # Special check for zip-slip vulnerability
+                    if '/packages' not in dir and '\\packages\\' not in dir and './packages/' not in dir and '/../' not in dir:
+                        if file != fileName and file != 'projectconfig.json':
+                            tar.add(os.path.join(dir,file)),
 
     # Adds appropriate subdirectories to freshly created project directory
     @staticmethod

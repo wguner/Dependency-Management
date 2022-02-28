@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=b'Z\016./FileTransfer',
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x12\x46ileTransfer.proto\x12\x0c\x46ileTransfer\"2\n\x04\x46ile\x12\x0e\n\x04name\x18\x01 \x01(\tH\x00\x12\x0f\n\x05\x63hunk\x18\x02 \x01(\x0cH\x00\x42\t\n\x07\x63ontent\"\'\n\x07Request\x12\x0e\n\x06header\x18\x01 \x01(\t\x12\x0c\n\x04\x62ody\x18\x02 \x01(\t\"(\n\x08Response\x12\x0e\n\x06header\x18\x01 \x01(\t\x12\x0c\n\x04\x62ody\x18\x02 \x01(\t2\xbf\x01\n\x0b\x46ileService\x12\x39\n\x08\x44ownload\x12\x15.FileTransfer.Request\x1a\x12.FileTransfer.File\"\x00\x30\x01\x12\x38\n\x06Upload\x12\x12.FileTransfer.File\x1a\x16.FileTransfer.Response\"\x00(\x01\x12;\n\x08NameFile\x12\x15.FileTransfer.Request\x1a\x16.FileTransfer.Response\"\x00\x42\x10Z\x0e./FileTransferb\x06proto3'
+  serialized_pb=b'\n\x12\x46ileTransfer.proto\x12\x0c\x46ileTransfer\"B\n\x04\x46ile\x12\x0e\n\x04name\x18\x01 \x01(\tH\x00\x12\x0f\n\x05\x63hunk\x18\x02 \x01(\x0cH\x00\x12\x0e\n\x04type\x18\x03 \x01(\tH\x00\x42\t\n\x07\x63ontent\"\'\n\x07Request\x12\x0e\n\x06header\x18\x01 \x01(\t\x12\x0c\n\x04\x62ody\x18\x02 \x01(\t\"(\n\x08Response\x12\x0e\n\x06header\x18\x01 \x01(\t\x12\x0c\n\x04\x62ody\x18\x02 \x01(\t2\xbf\x01\n\x0b\x46ileService\x12\x39\n\x08\x44ownload\x12\x15.FileTransfer.Request\x1a\x12.FileTransfer.File\"\x00\x30\x01\x12\x38\n\x06Upload\x12\x12.FileTransfer.File\x1a\x16.FileTransfer.Response\"\x00(\x01\x12;\n\x08NameFile\x12\x15.FileTransfer.Request\x1a\x16.FileTransfer.Response\"\x00\x42\x10Z\x0e./FileTransferb\x06proto3'
 )
 
 
@@ -47,6 +47,13 @@ _FILE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='type', full_name='FileTransfer.File.type', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -65,7 +72,7 @@ _FILE = _descriptor.Descriptor(
     fields=[]),
   ],
   serialized_start=36,
-  serialized_end=86,
+  serialized_end=102,
 )
 
 
@@ -103,8 +110,8 @@ _REQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=88,
-  serialized_end=127,
+  serialized_start=104,
+  serialized_end=143,
 )
 
 
@@ -142,8 +149,8 @@ _RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=129,
-  serialized_end=169,
+  serialized_start=145,
+  serialized_end=185,
 )
 
 _FILE.oneofs_by_name['content'].fields.append(
@@ -152,6 +159,9 @@ _FILE.fields_by_name['name'].containing_oneof = _FILE.oneofs_by_name['content']
 _FILE.oneofs_by_name['content'].fields.append(
   _FILE.fields_by_name['chunk'])
 _FILE.fields_by_name['chunk'].containing_oneof = _FILE.oneofs_by_name['content']
+_FILE.oneofs_by_name['content'].fields.append(
+  _FILE.fields_by_name['type'])
+_FILE.fields_by_name['type'].containing_oneof = _FILE.oneofs_by_name['content']
 DESCRIPTOR.message_types_by_name['File'] = _FILE
 DESCRIPTOR.message_types_by_name['Request'] = _REQUEST
 DESCRIPTOR.message_types_by_name['Response'] = _RESPONSE
@@ -188,8 +198,8 @@ _FILESERVICE = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=172,
-  serialized_end=363,
+  serialized_start=188,
+  serialized_end=379,
   methods=[
   _descriptor.MethodDescriptor(
     name='Download',

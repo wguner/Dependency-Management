@@ -18,6 +18,9 @@ import src.network_interface.ProjectOperations.ProjectOperations_pb2_grpc as Pro
 import src.filesystem_interface.filesystem_interface
 import src.network_interface.ServerUtils.ServerUtils as serverUtils
 
+import src.network_interface.ListContents.ListContents_pb2 as ListContents_pb2
+import src.network_interface.ListContents.ListContents_pb2_grpc as ListContents_pb2_grpc
+
 # Entry-point for the command line interface. Appears as 'packagebird'.
 @click.group()
 @click.pass_context
@@ -28,6 +31,34 @@ def cli(ctx):
     if not serverUtils.ServerUtils.ping('127.0.0.1', '50051'):
         exit(0)
 
+# Sync project contents with remote server
+@cli.command('sync', short_help='Syncs source of project with server')
+@click.pass_context
+def sync(ctx):
+    # Close if called on directory not formatted as project
+    if not FilesystemInterface.check_if_project_dir():
+        click.echo('Directory is not configured as project. Please either configure as project or navigate to configured directory.')
+        return
+
+    pr_config = FilesystemInterface.get_project_config()
+    pr_name = pr_config["name"]
+
+    click.echo('Syncing project source files')
+
+    # Package name
+    project_name = f'{pr_name}'
+
+    click.echo(f'Uploaded project: {project_name} source')
+
+    # Create compressed archive of file contents
+    FilesystemInterface.make_archive(project_name)
+
+    project_archive_name = f'{project_name}.tar.gz'
+
+    # Upload to server
+    fileservice = FileTransfer()
+    fileservice.upload('127.0.0.1', '50051', project_archive_name, "project")
+    os.remove(project_archive_name)
 
 # Add package to the development directory
 @cli.command('addpackage', short_help='Adds a package to development directory packages subdirectory')
@@ -115,15 +146,17 @@ def createpackage(ctx, debug):
     print(message)
 
     # Package name
-    package_name = f'{project_name}-v{project_version}.tar.gz'
+    package_name = f'{project_name}-{project_version}'
 
     # Create compressed archive of file contents
-    FilesystemInterface.make_archive(project_name, project_version)
+    FilesystemInterface.make_archive(package_name)
+
+    package_name = f'{package_name}.tar.gz'
 
     # Upload to server
     if (not debug):
         fileservice = FileTransfer()
-        fileservice.upload('127.0.0.1', '50051', package_name)
+        fileservice.upload('127.0.0.1', '50051', package_name, "package")
     os.remove(package_name)
 
 # Builds package on the server
@@ -161,5 +194,41 @@ def createproject(ctx, name, description):
     
     # Formatting newly created project directory
     FilesystemInterface.make_project_dir(name, 0)
+    pass
+
+# List entites in server
+@cli.command('list', short_help='List Projects, Packages, Members associated with configured Packagebird server')
+@click.option('-proj', '--projects', help='All projects registered on server', default=False)
+@click.option('-pack', '--packages', help='All packages registered on server', default=False)
+@click.option('-memb', '--members', help='All members registered on server', default=False)
+@click.pass_context
+def gList(ctx, projects=False, packages=False, members=False):
+
+    listRequest = ListContents_pb2.ContentRequest(ListProjects=projects, ListPackages=packages, ListMembers=members)
+    listResponse = {}
+
+    #DEBUG
+    click.echo(f"{listRequest.ListProjects}\n{listRequest.ListPackages}\n{listRequest.ListMembers}")
+
+    with grpc.insecure_channel('localhost:50051') as channel:
+        stub = ListContents_pb2_grpc.ListContentServicesStub(channel)
+        listResponse = stub.GetContent(listRequest)
+    
+    hasProjects, hasPackages, hasMembers = len(listResponse.Projects)>0, len(listResponse.Packages)>0, len(listResponse.Members)>0
+
+    if hasProjects:
+        click.echo(f"Projects:\n")
+        for project in listResponse.Projects:
+            click.echo(f"{project}")
+
+    if hasPackages:
+        click.echo(f"Projects:\n")
+        for package in listResponse.Packages:
+            click.echo(f"{package}")
+
+    if hasMembers:
+        click.echo(f"Projects:\n")
+        for member in listResponse.Members:
+            click.echo(f"{member}")
 
     pass

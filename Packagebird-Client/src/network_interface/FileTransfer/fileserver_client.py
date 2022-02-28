@@ -1,3 +1,4 @@
+from turtle import mode
 import grpc
 import src.network_interface.FileTransfer.FileTransfer_pb2 as FileTransfer_pb2
 import src.network_interface.FileTransfer.FileTransfer_pb2_grpc as FileTransfer_pb2_grpc
@@ -7,21 +8,30 @@ class FileTransfer(object):
         pass
 
     # Parses content of file
-    def file_reader(self, filename):
+    def file_reader(self, filename, operationMode):
         BUFFER_SIZE = 64 * 1024
+        mode_need_shared = True
         first_chunk = True
 
+        print(f'File name being uploaded: {filename}\nMode of upload: {operationMode}\n')
+
+        
         with open(filename, 'rb') as file:
             while True:
-                if first_chunk:
+                print(f'Values of control booleans:\nMode:\t{mode_need_shared}\nFirst Chunk:\t{first_chunk}')
+                if mode_need_shared:
+                    print(f'Output upload type {operationMode}')
+                    yield FileTransfer_pb2.File(type=operationMode)
+                    mode_need_shared=False
+                elif first_chunk:
                     # Minor change to ensure first 'chunk' submitted is the filename
                     yield FileTransfer_pb2.File(name=filename)
                     first_chunk = False
-
-                chunks = file.read(BUFFER_SIZE)
-                if len(chunks) == 0:
-                    return
-                yield FileTransfer_pb2.File(chunk=chunks)
+                else:
+                    chunks = file.read(BUFFER_SIZE)
+                    if len(chunks) == 0:
+                        return
+                    yield FileTransfer_pb2.File(chunk=chunks)
 
     # Downloads file from server
     def download(self, address, port, filename):
@@ -34,10 +44,11 @@ class FileTransfer(object):
             print(f'Downloaded file: {filename}')
 
     # Uploads file to server
-    def upload(self, address, port, filename):
+    def upload(self, address, port, filename, mode):
         with grpc.insecure_channel(f'{address}:{port}') as channel:
             stub = FileTransfer_pb2_grpc.FileServiceStub(channel)
-            file_chunks = self.file_reader(filename)
+            file_chunks = self.file_reader(filename, mode)
+            print(f'Chunk being uploaded: {file_chunks}')
             response = stub.Upload(file_chunks)
             print(f'Uploaded file: {filename}, with response: {response.body}')
             # nameFileRequest = FileTransfer_pb2.Request(header='Rename File', body=f'{filename}')

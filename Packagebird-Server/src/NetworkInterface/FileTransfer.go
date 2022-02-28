@@ -7,7 +7,10 @@ import (
 	"os"
 	DatabaseInterface "packagebird-server/src/DatabaseInterface"
 	fileTransfer "packagebird-server/src/NetworkInterface/FileTransfer"
+	config "packagebird-server/src/config"
 	"packagebird-server/src/structures"
+	"strconv"
+	"strings"
 )
 
 const (
@@ -20,7 +23,7 @@ func (server *GRPCServer) Download(request *fileTransfer.Request, fileStream fil
 	log.Printf("Received request for package %v", request.GetBody())
 
 	// Get direct path to file
-	filepath := fmt.Sprintf(PACKAGEPATH+"\\%v", request.GetBody())
+	filepath := fmt.Sprintf(config.Config.PackageSourcePath+"/%v", request.GetBody())
 
 	// Open file and close when finished, or catch error
 	file, err := os.Open(filepath)
@@ -73,10 +76,25 @@ func (server *GRPCServer) Download(request *fileTransfer.Request, fileStream fil
 func (server *GRPCServer) Upload(fileStream fileTransfer.FileService_UploadServer) error {
 	log.Printf("Received request to upload file from client to server...")
 
-	// Creates the tempory directory if not already present
-	var filepath = PACKAGEPATH // fmt.Sprintf("%vpackages", PACKAGEPATH)
+	// Get mode of upload
+	content, err := fileStream.Recv()
+	if err != nil {
+		log.Printf("Error getting mode of file upload from client\n%v", err)
+		return err
+	}
+	mode := content.GetType()
 
-	_, err := os.Stat(filepath)
+	var filepath string
+
+	// Determine output path from mode
+	if mode == "package" {
+		filepath = config.Config.PackageSourcePath
+	} else if mode == "project" {
+		filepath = config.Config.ProjectSourcePath
+	}
+
+	// Creates the tempory directory if not already present
+	_, err = os.Stat(filepath)
 	if os.IsNotExist(err) {
 		log.Printf("Temporary directory not found, creating new temporary directory")
 		os.Mkdir(filepath, 0755)
@@ -91,7 +109,7 @@ func (server *GRPCServer) Upload(fileStream fileTransfer.FileService_UploadServe
 	filename := chunk.GetName()
 
 	// Create the temp file to be written to
-	file, err := os.Create(filepath + "\\" + filename)
+	file, err := os.Create(filepath + "/" + filename)
 
 	// If error encountered, return out. Else, progress to writing to the file
 	if err != nil {
@@ -127,11 +145,18 @@ func (server *GRPCServer) Upload(fileStream fileTransfer.FileService_UploadServe
 		}
 	}
 
+	// Grab package version
+	pkgVer, _ := strconv.Atoi(strings.Split(strings.Split(filename, "-")[1], ".")[0])
+
 	entry := structures.Package{
-		Name:    filename,
-		Version: 0,
+		Name:      strings.Split(filename, "-")[0],
+		Version:   int64(pkgVer),
+		BuildFile: "gcc softcookie.c -o SoftCookie",
 	}
-	_, err = DatabaseInterface.NewPackage(*mongoDBClientGlobal, entry)
+
+	if mode == "package" {
+		_, err = DatabaseInterface.NewPackage(*mongoDBClientGlobal, entry)
+	}
 
 	var responseFileName string
 	var message *fileTransfer.Response

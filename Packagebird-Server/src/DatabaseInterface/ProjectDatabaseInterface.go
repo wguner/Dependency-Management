@@ -2,7 +2,10 @@ package DatabaseInterface
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"os"
+	configFile "packagebird-server/src/config"
 	structures "packagebird-server/src/structures"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -21,11 +24,18 @@ func NewProject(client mongo.Client, name string, description string) (bool, err
 	// !!! This conditional needs fixed, not elegant at all.
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
+			// Project source directory path
+			projectSourcePath := configFile.Config.ProjectSourcePath
+			nameSourcePath := fmt.Sprintf("%v/%v", projectSourcePath, name)
+			if err := os.Mkdir(nameSourcePath, 0755); err != nil {
+				log.Printf("Failed to create project directory at path specified\n%v", err)
+				return false, err
+			}
 
 			// If no project found with name, create new project
 			log.Printf("Creating new project with name %v in database...", name)
 
-			newProject := structures.Project{Name: name, Description: description, UUID: "", LatestVersion: 0, Packages: nil, Source: ""}
+			newProject := structures.Project{Name: name, Description: description, UUID: "", LatestVersion: 0, Packages: nil, SourceFile: nameSourcePath}
 			_, insertErr := collection.InsertOne(context.TODO(), newProject)
 
 			if insertErr != nil {
