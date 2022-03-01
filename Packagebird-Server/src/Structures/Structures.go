@@ -4,6 +4,10 @@ import "go.mongodb.org/mongo-driver/mongo"
 
 var GlobalMongoClient *mongo.Client
 
+const (
+	PACKAGEPATH = "NOTHING"
+)
+
 type Package struct {
 	Name           string          `bson:"name"`
 	Description    string          `bson:"description"`
@@ -22,11 +26,12 @@ type Package struct {
 type Project struct {
 	Name          string   `bson:"name"`
 	Description   string   `bson:"description"`
-	Team          Member   `bson:"team,inline"`
 	UUID          string   `bson:"uuid"`
 	LatestVersion int64    `bson:"latest_version"`
 	Packages      []string `bson:"packages"`
 	SourceFile    string   `bson:"source_file"`
+	BuildFile     string   `bson:"build_file"`
+	TestFile      string   `bson:"test_file"`
 	CreatedOn     string   `bson:"created_on"`
 	LastSyncedOn  string   `bson:"last_synced_on"`
 	LastSyncedBy  string   `bson:"last_synced_by"`

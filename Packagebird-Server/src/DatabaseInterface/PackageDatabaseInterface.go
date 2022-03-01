@@ -235,46 +235,46 @@ func GetPackageNameVersion(pstring string) []string {
 }
 
 func GetPackages(client mongo.Client) ([]string, error) {
-	option := options.Find().SetProjection(bson.D{{"name", 1}, {"_id", 0}})
 	collection := client.Database("packagebird").Collection("packages")
+	option := options.Find()
+	var result structures.Package
+	returns := []string{}
 
-	type PackageResults struct {
-		Names []string `bson:"name"`
-	}
-
-	var returns *PackageResults
 	cursor, err := collection.Find(context.TODO(), bson.D{}, option)
 	if err != nil {
 		log.Printf("Failed to retrieve list of packages")
 		return nil, err
 	}
 
-	cursor.All(context.TODO(), &returns)
-
-	for _, result := range returns.Names {
-		log.Printf("Listing package: %v\n", result)
+	for cursor.Next(context.TODO()) {
+		if err := cursor.Decode(&result); err != nil {
+			log.Printf("Failed to decode package")
+			return []string{}, err
+		}
+		returns = append(returns, fmt.Sprintf("%v-%v", result.Name, result.Version))
 	}
 
-	return returns.Names, nil
+	return returns, nil
 }
 
 func GetProjects(client mongo.Client) ([]string, error) {
-	collection := client.Database("packagebird").Collection("projects")
+	collection := client.Database("packagebird").Collection("project")
+	options := options.Find()
 	var results []structures.Project
 	var returns []string
 
-	cursor, err := collection.Find(context.TODO(), bson.D{{}}, nil)
+	cursor, err := collection.Find(context.TODO(), bson.M{}, options)
 	if err != nil {
 		log.Printf("Failed to connect to database of projects")
 		return nil, err
 	}
 	for cursor.Next(context.TODO()) {
-		var project *structures.Project
-		err := cursor.Decode(project)
+		var project structures.Project
+		err := cursor.Decode(&project)
 		if err != nil {
 			log.Printf("Cannot decode to project struct")
 		}
-		results = append(results, *project)
+		results = append(results, project)
 	}
 	for _, p := range results {
 		log.Printf("Found:\t%v", p.Name)
@@ -284,24 +284,36 @@ func GetProjects(client mongo.Client) ([]string, error) {
 }
 
 func GetMembers(client mongo.Client) ([]string, error) {
-	option := options.Find().SetProjection(bson.D{{"name", 1}, {"_id", 0}})
+
 	collection := client.Database("packagebird").Collection("members")
+	option := options.Find()
+	var result structures.Member
+	returns := []string{}
 
-	type MemberResults struct {
-		Names []string `bson:"name"`
-	}
-
-	var returns *MemberResults
-	cursor, err := collection.Find(context.TODO(), bson.D{}, option)
+	cursor, err := collection.Find(context.TODO(), bson.M{}, option)
 	if err != nil {
 		log.Printf("Failed to retrieve list of members")
 		return nil, err
 	}
 
-	cursor.All(context.TODO(), &returns)
-	for _, result := range returns.Names {
-		log.Printf("Listing Member: %v\n", result)
+	for cursor.Next(context.TODO()) {
+		if err := cursor.Decode(&result); err != nil {
+			log.Printf("Failed to decode member")
+			return []string{}, err
+		}
+		returns = append(returns, result.Name)
 	}
 
-	return returns.Names, nil
+	return returns, nil
 }
+
+/*
+func GetCollectionNames(client mongo.Client, database string, collection string, ) ([]string, error) {
+	retrievedCollection := client.Database(database).Collection(collection)
+	options := options.Find()
+
+
+
+	return nil, nil
+}
+*/

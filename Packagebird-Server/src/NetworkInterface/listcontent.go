@@ -10,7 +10,8 @@ import (
 
 // List Contents of the Server specified in the request
 func (server *GRPCServer) GetContent(context context.Context, ContentRequest *listcontent.ContentRequest) (*listcontent.ContentResponse, error) {
-	var ContentResponse *listcontent.ContentResponse
+	// var ContentResponse *listcontent.ContentResponse
+	listProjects, listPackages, listMembers := []string{}, []string{}, []string{}
 	var cErr error
 
 	// Get list of Projects
@@ -19,10 +20,9 @@ func (server *GRPCServer) GetContent(context context.Context, ContentRequest *li
 		if err != nil {
 			cErr = err
 		}
-		if results == nil {
-			log.Printf("No Projects Retreived!")
+		if results != nil {
+			listProjects = results
 		}
-		ContentResponse.Projects = results
 	}
 
 	// Get list of Packages
@@ -31,7 +31,9 @@ func (server *GRPCServer) GetContent(context context.Context, ContentRequest *li
 		if err != nil {
 			cErr = err
 		}
-		ContentResponse.Packages = results
+		if results != nil {
+			listPackages = results
+		}
 	}
 
 	// Get list of Members
@@ -40,7 +42,9 @@ func (server *GRPCServer) GetContent(context context.Context, ContentRequest *li
 		if err != nil {
 			cErr = err
 		}
-		ContentResponse.Packages = results
+		if results != nil {
+			listMembers = results
+		}
 	}
 
 	// Response
@@ -48,5 +52,6 @@ func (server *GRPCServer) GetContent(context context.Context, ContentRequest *li
 		log.Printf("Error retreiving response from database\nError:%v", cErr)
 		return nil, cErr
 	}
+	ContentResponse := &listcontent.ContentResponse{Projects: listProjects, Packages: listPackages, Members: listMembers}
 	return ContentResponse, nil
 }

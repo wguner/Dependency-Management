@@ -8,6 +8,7 @@ import (
 	packageOperations "packagebird-server/src/NetworkInterface/PackageOperations"
 	projectOperations "packagebird-server/src/NetworkInterface/ProjectOperations"
 	serverUtils "packagebird-server/src/NetworkInterface/ServerUtils"
+	buildtest "packagebird-server/src/NetworkInterface/buildtest"
 	listcontent "packagebird-server/src/NetworkInterface/listcontent"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -21,6 +22,7 @@ type GRPCServer struct {
 	fileTransfer.UnimplementedFileServiceServer
 	serverUtils.UnimplementedServerUtilsServicesServer
 	listcontent.UnimplementedListContentServicesServer
+	buildtest.UnimplementedBuildTestServicesServer
 }
 
 // Global mongoDBClient reference
@@ -48,6 +50,7 @@ func PackagebirdServerStart(address string, mongodbClient *mongo.Client) error {
 	fileTransfer.RegisterFileServiceServer(server, &GRPCServer{})
 	serverUtils.RegisterServerUtilsServicesServer(server, &GRPCServer{})
 	listcontent.RegisterListContentServicesServer(server, &GRPCServer{})
+	buildtest.RegisterBuildTestServicesServer(server, &GRPCServer{})
 
 	log.Print("Registered gRPC methods on server...")
 

@@ -11,8 +11,9 @@ import (
 	"os"
 	"os/exec"
 	dbinterface "packagebird-server/src/DatabaseInterface"
-	networkinterface "packagebird-server/src/NetworkInterface"
+	networkinterface "packagebird-server/src/structures"
 	structures "packagebird-server/src/structures"
+	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
@@ -111,14 +112,18 @@ func CompressFile(fileName string) error {
 
 // Assuming that passed package is valid and complete, operation proceeds
 func ExtractPackageSource(pkg *structures.Package, path string) (bool, error) {
+	// Hacky fix until database schema updated
+	pkg.SourceFile = fmt.Sprintf("./packages/%v-%v.tar.gz", pkg.Name, pkg.Version)
+
 	// Check if source file referenced exist
 	if _, err := os.Stat(pkg.SourceFile); os.IsNotExist(err) {
-		log.Printf("Cannot find source for package: %v-%d\nError:\t%v", pkg.Name, pkg.Version, err)
+		log.Printf("Cannot find source: %v for package: %v-%d\nError:\t%v", pkg.SourceFile, pkg.Name, pkg.Version, err)
 		return false, err
 	}
 
 	// Generate package extraction path
-	pkgTmpDir := fmt.Sprintf("%v/%v-%v", path, pkg.Name, pkg.Version)
+	pkgTmpDir := path // fmt.Sprintf("%v/%v-%v", path, pkg.Name, pkg.Version)
+	log.Printf("Extract package: %v to path: %v", pkg.Name, pkg.Version)
 
 	// Check if subdirectory already present in tmp/, remove, return error if problem
 	if _, err := os.Stat(pkgTmpDir); !os.IsNotExist(err) {
@@ -143,49 +148,76 @@ func ExtractPackageSource(pkg *structures.Package, path string) (bool, error) {
 		log.Printf("Cannot read file: %v\nError:\t%v", pkg.SourceFile, err)
 		return false, err
 	}
+	pkgTmpDir = fmt.Sprintf("tmp/%v", pkg.Name)
+	buffer := bytes.NewBuffer(fd)
+	destination := filepath.FromSlash(pkgTmpDir)
 
 	// Extract archived source to package extraction directory
-	err = extract.Gz(context.TODO(), bytes.NewBuffer(fd), pkgTmpDir, nil)
-	if err != nil {
-		log.Printf("Cannot extract file: %v\nError:\t%v", pkg.SourceFile, err)
+	aErr := extract.Archive(context.TODO(), buffer, destination, nil)
+	if aErr != nil {
+		log.Printf("Cannot extract file: %v\nError:\t%v", pkg.SourceFile, aErr)
 		return false, err
 	}
+
+	/*
+		err = extract.Gz(context.TODO(), buffer, destination, nil)
+		if err != nil {
+			log.Printf("Cannot extract file: %v\nError:\t%v", pkg.SourceFile, err)
+			return false, err
+		}
+	*/
 
 	// Successful operation, close
 	return true, nil
 }
 
 // Executes the associated build process in the extracted package source directory
-func BuildPackage(pkg *structures.Package, path string) (bool, error) {
+func BuildPackage(pkg *structures.Package) (bool, error) {
 	// Extracts, runs build commands
-	if _, err := ExecutePackageCommand(pkg, path, pkg.BuildFile); err != nil {
+	if err := ExtractPackageDependenciesSource(pkg); err != nil {
 		return false, err
 	}
-	return true, nil
+	path := fmt.Sprintf("tmp/%v", pkg.Name)
+	_, err := ExecutePackageCommand(pkg, path, pkg.BuildFile)
+	if err != nil {
+		log.Printf("Failed to build package: %v", path)
+		return false, err
+	} else {
+		log.Printf("Successfully built package: %v", path)
+		return true, nil
+	}
 }
 
 // Executes associated test process in extracted package source directory
-func TestPackage(pkg *structures.Package, path string) (bool, error) {
-	// Extracts, runs test commands
-	if _, err := ExecutePackageCommand(pkg, path, pkg.TestFile); err != nil {
+func TestPackage(pkg *structures.Package) (bool, error) {
+	// Extracts, runs build commands
+	if err := ExtractPackageDependenciesSource(pkg); err != nil {
 		return false, err
 	}
-	return true, nil
+	path := fmt.Sprintf("tmp/%v", pkg.Name)
+	_, err := ExecutePackageCommand(pkg, path, pkg.TestFile)
+	if err != nil {
+		log.Printf("Failed to test package: %v", path)
+		return false, err
+	} else {
+		log.Printf("Successfully tested package: %v", path)
+		return true, nil
+	}
 }
 
 // Executes a command on a package
 func ExecutePackageCommand(pkg *structures.Package, path string, commands string) (bool, error) {
 	// Extract package source
-	if _, err := ExtractPackageSource(pkg, path); err != nil {
+	/*if _, err := ExtractPackageSource(pkg, path); err != nil {
 		return false, err
-	}
+	}*/
 
 	// Get Operating System to determine which shell
 	var shell string
 	os := runtime.GOOS
 	switch os {
 	case "windows":
-		shell = "ps"
+		shell = "bash"
 	case "linux":
 		shell = "bash"
 	default:
@@ -194,7 +226,7 @@ func ExecutePackageCommand(pkg *structures.Package, path string, commands string
 
 	// Load commands to shell call in package directory
 	cmd := exec.Command(shell, "-c", commands)
-	cmd.Dir = fmt.Sprintf("%v/%v-%v", path, pkg.Name, pkg.Version)
+	cmd.Dir = path
 
 	// Output for clarity
 	log.Printf("Running: '%v'\nWith shell: '%v'\nOn directory: '%v'", commands, shell, cmd.Dir)
@@ -213,7 +245,7 @@ func ExecutePackageCommand(pkg *structures.Package, path string, commands string
 
 // Extracts a package and all dependencies to a ./tmp/ subdirectory
 func ExtractPackageDependenciesSource(pkg *structures.Package) error {
-	pkgPath := fmt.Sprintf("./tmp/%v-%v", pkg.Name, pkg.Version)
+	pkgPath := fmt.Sprintf("tmp/%v", pkg.Name)
 	pkgDepsPath := fmt.Sprintf("%v/packages", pkgPath)
 
 	// Extract base-level package
@@ -222,7 +254,6 @@ func ExtractPackageDependenciesSource(pkg *structures.Package) error {
 	}
 
 	// Extract dependency-level packages
-	log.Printf("Extracting package: %v dependencies", pkg.Name)
 	for _, dep := range pkg.Dependencies {
 
 		// Get dependency name, version

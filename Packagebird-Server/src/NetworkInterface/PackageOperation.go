@@ -5,7 +5,7 @@ import (
 	"fmt"
 	databaseInterface "packagebird-server/src/DatabaseInterface"
 	packageOperations "packagebird-server/src/NetworkInterface/PackageOperations"
-	"packagebird-server/src/structures"
+	structures "packagebird-server/src/structures"
 	"strconv"
 )
 

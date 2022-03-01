@@ -1,5 +1,9 @@
 from ast import Str
+from distutils.version import Version
+from inspect import getmembers
 from posixpath import split
+from re import T
+from urllib import request
 import click
 import sys
 import os
@@ -20,6 +24,9 @@ import src.network_interface.ServerUtils.ServerUtils as serverUtils
 
 import src.network_interface.ListContents.ListContents_pb2 as ListContents_pb2
 import src.network_interface.ListContents.ListContents_pb2_grpc as ListContents_pb2_grpc
+
+import src.network_interface.BuildTest.BuildTest_pb2 as BuildTest_pb2
+import src.network_interface.BuildTest.BuildTest_pb2_grpc as BuildTest_pb2_grpc
 
 # Entry-point for the command line interface. Appears as 'packagebird'.
 @click.group()
@@ -161,10 +168,19 @@ def createpackage(ctx, debug):
 
 # Builds package on the server
 @cli.command('buildpackage', short_help='Builds a package on the server and relays the result')
-@click.option('-n', '--n', help='Name of package being built')
+@click.option('-n', '--name', help='Name of package being built')
 @click.option('-v', '--version', help='Version of package being built')
 @click.pass_context
 def buildpackage(ctx, name, version):
+    # Requested package name and version
+    version = int(version)
+    request = BuildTest_pb2.PackageInfo(name=name, version=version)
+
+    with grpc.insecure_channel('localhost:50051') as channel:
+        stub = BuildTest_pb2_grpc.BuildTestServicesStub(channel)
+        response = stub.Build(request)
+        if response != None:
+            click.echo(response)
     pass
 
 # Create project both locally and on the remote server
@@ -198,17 +214,29 @@ def createproject(ctx, name, description):
 
 # List entites in server
 @cli.command('list', short_help='List Projects, Packages, Members associated with configured Packagebird server')
-@click.option('-proj', '--projects', help='All projects registered on server', default=False)
-@click.option('-pack', '--packages', help='All packages registered on server', default=False)
-@click.option('-memb', '--members', help='All members registered on server', default=False)
+@click.option('-pro', '--projects', help='All projects registered on server', is_flag=True)
+@click.option('-pac', '--packages', help='All packages registered on server', is_flag=True)
+@click.option('-mem', '--members', help='All members registered on server', is_flag=True)
 @click.pass_context
-def gList(ctx, projects=False, packages=False, members=False):
+def gList(ctx, projects, packages, members):
+    # Using Click's flag options
+    getProjects, getPackages, getMembers = False, False, False
+    if projects:
+        getProjects = True
+    if packages:
+        getPackages = True
+    if members:
+        getMembers = True
 
-    listRequest = ListContents_pb2.ContentRequest(ListProjects=projects, ListPackages=packages, ListMembers=members)
+    # Exit early if nothing
+    if not getProjects and not getPackages and not getMembers:
+        return  
+
+    listRequest = ListContents_pb2.ContentRequest(ListProjects=getProjects, ListPackages=getPackages, ListMembers=getMembers)
     listResponse = {}
 
     #DEBUG
-    click.echo(f"{listRequest.ListProjects}\n{listRequest.ListPackages}\n{listRequest.ListMembers}")
+    # click.echo(f"{listRequest.ListProjects}\n{listRequest.ListPackages}\n{listRequest.ListMembers}")
 
     with grpc.insecure_channel('localhost:50051') as channel:
         stub = ListContents_pb2_grpc.ListContentServicesStub(channel)
@@ -217,18 +245,18 @@ def gList(ctx, projects=False, packages=False, members=False):
     hasProjects, hasPackages, hasMembers = len(listResponse.Projects)>0, len(listResponse.Packages)>0, len(listResponse.Members)>0
 
     if hasProjects:
-        click.echo(f"Projects:\n")
+        click.echo(f"Projects:")
         for project in listResponse.Projects:
-            click.echo(f"{project}")
+            click.echo(f"\t{project}")
 
     if hasPackages:
-        click.echo(f"Projects:\n")
+        click.echo(f"Packages:")
         for package in listResponse.Packages:
-            click.echo(f"{package}")
+            click.echo(f"\t{package}")
 
     if hasMembers:
-        click.echo(f"Projects:\n")
+        click.echo(f"Members:")
         for member in listResponse.Members:
-            click.echo(f"{member}")
+            click.echo(f"\t{member}")
 
     pass
