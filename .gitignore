@@ -158,3 +158,4 @@ Packagebird-Server/src/Core/Compiles/config.yaml
 *.gz
 Packagebird-Server/src/Core/Packagebird-Server-DebianLinuxAMD64
 Packagebird-Server/src/Core/Packagebird-Server-WindowsAMD64
+Packagebird-Server/src/Core/Packagebird-Server-LinuxAMD64

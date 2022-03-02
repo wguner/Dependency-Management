@@ -17,7 +17,7 @@ var GlobalConfig *configFile.ConfigFile
 
 // Temporary constant for address
 const (
-	ADDRESS  = "127.0.0.1:50051"
+	ADDRESS  = ":50051"
 	MONGOURI = "mongodb://localhost:27017"
 )
 
@@ -85,7 +85,7 @@ func createConfigFile(path string) error {
 	file := configFile.ConfigFile{
 		PackageSourcePath: fmt.Sprintf("%v/packages", wd),
 		ProjectSourcePath: fmt.Sprintf("%v/projects", wd),
-		ServerAddress:     "127.0.0.1:50051",
+		ServerAddress:     ":50051",
 		DatabaseAddress:   "mongodb://localhost:27017",
 	}
 

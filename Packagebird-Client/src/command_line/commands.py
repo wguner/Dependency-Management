@@ -28,6 +28,9 @@ import src.network_interface.ListContents.ListContents_pb2_grpc as ListContents_
 import src.network_interface.BuildTest.BuildTest_pb2 as BuildTest_pb2
 import src.network_interface.BuildTest.BuildTest_pb2_grpc as BuildTest_pb2_grpc
 
+# Global variable for connection address
+address = "149.28.65.7"
+
 # Entry-point for the command line interface. Appears as 'packagebird'.
 @click.group()
 @click.pass_context
@@ -35,7 +38,7 @@ def cli(ctx):
     """Client utility for managing packages, is a group command for the subcommands below. Call --help on a subcommand to get further details."""
     # The entry point for the command line interface
     # Should ping server from this point to check that there is a server to connect with at the specified point
-    if not serverUtils.ServerUtils.ping('127.0.0.1', '50051'):
+    if not serverUtils.ServerUtils.ping(address, '50051'):
         exit(0)
 
 # Sync project contents with remote server
@@ -64,7 +67,7 @@ def sync(ctx):
 
     # Upload to server
     fileservice = FileTransfer()
-    fileservice.upload('127.0.0.1', '50051', project_archive_name, "project")
+    fileservice.upload(address, '50051', project_archive_name, "project")
     os.remove(project_archive_name)
 
 # Add package to the development directory
@@ -92,7 +95,7 @@ def addpackage(ctx, name, version):
 
     # Make a request for a package-list
     # grpc packagelist service here
-    stub = packageOperationsGRPC.PackageOperationServicesStub(grpc.insecure_channel('127.0.0.1:50051'))
+    stub = packageOperationsGRPC.PackageOperationServicesStub(grpc.insecure_channel(f'{address}:50051'))
     packageList = stub.GetPackageList(packageOperations.PackageRequest(packageitem=request_string))
 
     # Debug output
@@ -115,7 +118,7 @@ def addpackage(ctx, name, version):
         os.chdir(f'{itemName}')
     
         # Download the package source into the package directory
-        fileservice.download('127.0.0.1', '50051', f'{itemRequestString}')
+        fileservice.download(address, '50051', f'{itemRequestString}')
     
         # Extract the contents
         with tarfile.open(itemRequestString, 'r:gz') as archive:
@@ -163,7 +166,7 @@ def createpackage(ctx, debug):
     # Upload to server
     if (not debug):
         fileservice = FileTransfer()
-        fileservice.upload('127.0.0.1', '50051', package_name, "package")
+        fileservice.upload(address, '50051', package_name, "package")
     os.remove(package_name)
 
 # Builds package on the server
@@ -176,7 +179,7 @@ def buildpackage(ctx, name, version):
     version = int(version)
     request = BuildTest_pb2.PackageInfo(name=name, version=version)
 
-    with grpc.insecure_channel('localhost:50051') as channel:
+    with grpc.insecure_channel(f'{address}:50051') as channel:
         stub = BuildTest_pb2_grpc.BuildTestServicesStub(channel)
         response = stub.Build(request)
         if response != None:
@@ -194,7 +197,7 @@ def createproject(ctx, name, description):
     request = ProjectOperations_pb2.ProjectRequest(name=name, description=description)
     
     # Needs moved to discrete logical section
-    with grpc.insecure_channel('localhost:50051') as channel:
+    with grpc.insecure_channel(f'{address}:50051') as channel:
         stub = ProjectOperations_pb2_grpc.ProjectOperationServicesStub(channel)
         response = stub.GetProject(request)
         if response.exist:
@@ -238,7 +241,7 @@ def gList(ctx, projects, packages, members):
     #DEBUG
     # click.echo(f"{listRequest.ListProjects}\n{listRequest.ListPackages}\n{listRequest.ListMembers}")
 
-    with grpc.insecure_channel('localhost:50051') as channel:
+    with grpc.insecure_channel(f'{address}:50051') as channel:
         stub = ListContents_pb2_grpc.ListContentServicesStub(channel)
         listResponse = stub.GetContent(listRequest)
     
