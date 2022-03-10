@@ -47,6 +47,7 @@ type Member struct {
 	Name     string `bson:"name"`
 	Password string `bson:"password"`
 	Employed bool   `bson:"is_employed"`
+	Level    string `bson:"level"`
 }
 
 type DependencyGraph struct {

@@ -307,13 +307,31 @@ func GetMembers(client mongo.Client) ([]string, error) {
 	return returns, nil
 }
 
-/*
-func GetCollectionNames(client mongo.Client, database string, collection string, ) ([]string, error) {
-	retrievedCollection := client.Database(database).Collection(collection)
-	options := options.Find()
+func GetAllPackages(client mongo.Client, name string, version int64) ([]string, error) {
+	// Check if package found
+	found, err := LookupPackage(client, structures.Package{Name: name, Version: version})
+	if err != nil {
+		return nil, err
+	}
 
+	// If not found, return nothing
+	if !found {
+		return nil, err
+	}
 
+	// Get all package dependencies
+	packages, err := GetPackageDependencies(client, structures.Package{Name: name, Version: version})
+	if err != nil {
+		return nil, err
+	}
+	packages = append(packages, fmt.Sprintf("%v-v%v", name, version))
 
-	return nil, nil
+	// Return list of package and it's dependencies
+	return packages, nil
 }
-*/
+
+// Return list of packages back to client, make request for each file and return and extract to client as formatted
+// Each package should have formatted list of references to dependencies
+// Client should request file for each item in list, extract and format as specified
+// Unfortunately means more request and network exchanges, compared to bundling all items into single file and transmitting whole
+// Probably better to have atomic operations for relability
