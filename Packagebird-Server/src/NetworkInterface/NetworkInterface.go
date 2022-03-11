@@ -10,6 +10,7 @@ import (
 	serverUtils "packagebird-server/src/NetworkInterface/ServerUtils"
 	buildtest "packagebird-server/src/NetworkInterface/buildtest"
 	listcontent "packagebird-server/src/NetworkInterface/listcontent"
+	member_operations "packagebird-server/src/NetworkInterface/member_operations"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
@@ -23,6 +24,8 @@ type GRPCServer struct {
 	serverUtils.UnimplementedServerUtilsServicesServer
 	listcontent.UnimplementedListContentServicesServer
 	buildtest.UnimplementedBuildTestServicesServer
+	member_operations.UnimplementedMemberCRUDServicesServer
+	member_operations.UnimplementedMemberAuthenticationServer
 }
 
 // Global mongoDBClient reference
@@ -51,6 +54,8 @@ func PackagebirdServerStart(address string, mongodbClient *mongo.Client) error {
 	serverUtils.RegisterServerUtilsServicesServer(server, &GRPCServer{})
 	listcontent.RegisterListContentServicesServer(server, &GRPCServer{})
 	buildtest.RegisterBuildTestServicesServer(server, &GRPCServer{})
+	member_operations.RegisterMemberCRUDServicesServer(server, &GRPCServer{})
+	member_operations.RegisterMemberAuthenticationServer(server, &GRPCServer{})
 
 	log.Print("Registered gRPC methods on server...")
 

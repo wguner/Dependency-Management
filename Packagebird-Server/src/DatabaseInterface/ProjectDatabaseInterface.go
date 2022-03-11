@@ -2,6 +2,7 @@ package DatabaseInterface
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -150,7 +151,14 @@ func CreateMember(client mongo.Client, member structures.Member) error {
 		_, err := collection.InsertOne(context.TODO(), member)
 		if err != nil {
 			return err
+		} else {
+			return nil
 		}
+	}
+
+	// If error is nil, implies that member was found and member creation should not proceed
+	if err == nil {
+		return errors.New("member already present in database")
 	}
 	return nil
 }
@@ -228,4 +236,22 @@ func RemoveDependency(client mongo.Client, pname string, depname string, depvers
 		return err
 	}
 	return nil
+}
+
+// Authenticate member client to server
+func AuthenticateMember(client mongo.Client, name string, password string) (bool, error) {
+	member, err := GetMember(client, name)
+	// Member doesn't exist in database
+	if err == mongo.ErrNoDocuments {
+		return false, nil
+	} else if err != nil {
+		return false, err
+	}
+
+	// Check member's password against passed password
+	if member.Password == password {
+		return true, nil
+	}
+
+	return false, nil
 }

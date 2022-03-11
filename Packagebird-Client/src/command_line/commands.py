@@ -3,7 +3,9 @@ from distutils.version import Version
 from inspect import getmembers
 from posixpath import split
 from re import M, T
+from tokenize import Name
 from urllib import request
+from xmlrpc.client import Boolean
 import click
 import sys
 import os
@@ -27,6 +29,10 @@ import src.network_interface.ListContents.ListContents_pb2_grpc as ListContents_
 
 import src.network_interface.BuildTest.BuildTest_pb2 as BuildTest_pb2
 import src.network_interface.BuildTest.BuildTest_pb2_grpc as BuildTest_pb2_grpc
+
+# Member operations
+import src.network_interface.member_operations.MemberOperations_pb2 as MemberOperations_pb2
+import src.network_interface.member_operations.MemberOperations_pb2_grpc as MemberOperations_pb2_grpc
 
 # Global variable for connection address
 address =  "localhost" # "149.28.65.7" # "localhost"
@@ -330,6 +336,24 @@ def addmember(ctx, name, password, level):
         return
 
     # Make request to server, get message and relay to user
+    # Items needed for request
+    # currently configured client username, client password
+    # new user username, new user password, new user level
+    # on server, check if passed client username, client password match what is specified in database
+    # if so, check if user has appropriate privilege levels
+    # if so, proceed
+    if not ClientAuth():
+        return
+    
+    if name is 'admin':
+        click.echo('Cannot add new admin user to server')
+        return
+            
+    with grpc.insecure_channel(f'{address}:50051') as channel:
+        memberCRUDStub = MemberOperations_pb2_grpc.MemberCRUDServicesStub(channel)
+        createMemberRequest = MemberOperations_pb2.MemberAuthenticationRequest(Name=name, Password=password, Level=level)
+        memberResponse = memberCRUDStub.CreateMember(createMemberRequest)
+        click.echo(memberResponse.Response)
 
 # Remove member from server
 @cli.command('removemember', short_help='Removes specified member from server.\nCAN ONLY BE PERFORMED BY A USER WITH ADMIN LEVEL PRIVILEGES.')
@@ -342,4 +366,27 @@ def removemember(ctx, name):
         click.echo(f'Name of member must be specified! Please specify the member name.')
         return
     
+    if not ClientAuth():
+        return
+    
+    if name is 'admin':
+        click.echo('Cannot remove admin user from server')
+        return
+    
+    with grpc.insecure_channel(f'{address}:50051') as channel:
+        memberCRUDStub = MemberOperations_pb2_grpc.MemberCRUDServicesStub(channel)
+        createMemberRequest = MemberOperations_pb2.MemberAuthenticationRequest(Name=name)
+        memberResponse = memberCRUDStub.CreateMember(createMemberRequest)
+        click.echo(memberResponse.Response)
+
+def ClientAuth() -> Boolean:
     # Make request to server, get message and relay to user
+    with grpc.insecure_channel(f'{address}:50051') as channel:
+        memberAUTHStub = MemberOperations_pb2_grpc.MemberAuthenticationStub(channel)
+        
+        memberAuthRequest = MemberOperations_pb2.MemberAuthenticationRequest(Name=os.getenv("PACKAGEBIRD_USERNAME"), Password=os.getenv("PACKAGEBIRD_USERPASSWORD", IsLevel=True))
+        memberAuthResponse = memberAUTHStub.AuthenticateMember(memberAuthRequest)
+        if memberAuthResponse.Is_Authenticated == False:
+            click.echo(memberAuthResponse.Response)
+            return False
+        return True
