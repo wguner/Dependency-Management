@@ -14,19 +14,19 @@ import (
 func MongoDBServerConnect(uri string) (*mongo.Client, error) {
 
 	// Makes a 'client' connection to the MongoDB server service, passed as the string URI. Logs fatal error if process somehow incomplete.
-	mongodbClient, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
+	mongodbClient, err := mongo.Connect(context.Background(), options.Client().ApplyURI(uri))
 	if err != nil {
 		log.Printf("Error encountered with initial connection to %v...", uri)
 		return nil, err
 	}
 
 	// Conducts an initial ping operation to check if connection to MongoDB server service successful.
-	err = mongodbClient.Ping(context.TODO(), readpref.Primary())
+	err = mongodbClient.Ping(context.Background(), readpref.Primary())
 	if err != nil {
 		log.Printf("ERror encountered with initial ping to %v...", uri)
 	}
 
-	// Assuming above steps are succesful, notify server terminal.
+	// Assuming above steps are successful, notify server terminal.
 	fmt.Println("Successfully connected to local MongoDB server...")
 
 	return mongodbClient, nil
@@ -34,7 +34,7 @@ func MongoDBServerConnect(uri string) (*mongo.Client, error) {
 
 // Disconnect a passed MongoDB client from a MongoDB connection
 func MongoDBServerDisconnect(client mongo.Client) error {
-	err := client.Disconnect(context.TODO())
+	err := client.Disconnect(context.Background())
 	if err != nil {
 		log.Printf("Error encountered with disconnection from MongoDB server service...")
 		return err
