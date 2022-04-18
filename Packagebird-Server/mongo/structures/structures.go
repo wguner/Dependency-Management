@@ -1,33 +1,33 @@
 package structures
 
 import (
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
 
 // Graph node within dependency graph, references package
 type Graph struct {
-	Name     string          `bson:"name"`
-	Version  int64           `bson:"version"`
-	Package  bson.ObjectId   `bson:"package"`
-	Children []bson.ObjectId `bson:"children"`
+	Name     string               `bson:"name"`
+	Version  int64                `bson:"version"`
+	Package  primitive.ObjectID   `bson:"package"`
+	Children []primitive.ObjectID `bson:"children"`
 }
 
 // Package representation of a module of source code
 type Package struct {
-	Name    string          `bson:"name"`
-	Version int64           `bson:"version"`
-	Source  bson.ObjectId   `bson:"sourceId"`
-	Graph   bson.ObjectId   `bson:"graphId"`
-	Scripts []bson.ObjectId `bson:"scripts"`
+	Name    string               `bson:"name"`
+	Version int64                `bson:"version"`
+	Source  primitive.ObjectID   `bson:"sourceId"`
+	Graph   primitive.ObjectID   `bson:"graphId"`
+	Scripts []primitive.ObjectID `bson:"scripts"`
 }
 
 // PackageMetadata metadata attached to a package
 type PackageMetadata struct {
-	Package          bson.ObjectId `bson:"packageId"`
-	NumberDownloads  int64         `bson:"numberDownloads"`
-	LastDownloaded   time.Time     `bson:"lastDownloaded"`
-	LastDownloadedBy bson.ObjectId `bson:"LastDownloadedBy"`
+	Package          primitive.ObjectID `bson:"packageId"`
+	NumberDownloads  int64              `bson:"numberDownloads"`
+	LastDownloaded   time.Time          `bson:"lastDownloaded"`
+	LastDownloadedBy primitive.ObjectID `bson:"LastDownloadedBy"`
 }
 
 // User in system
@@ -38,9 +38,9 @@ type User struct {
 
 // Authentication entry for particular user in system
 type Authentication struct {
-	User    bson.ObjectId   `bson:"userId"`
-	Project []bson.ObjectId `bson:"projectIds"`
-	IsAdmin bool            `bson:"isAdmin"`
+	User    primitive.ObjectID   `bson:"userId"`
+	Project []primitive.ObjectID `bson:"projectIds"`
+	IsAdmin bool                 `bson:"isAdmin"`
 }
 
 // Source representation of the actual backing file for a project or a package
@@ -51,19 +51,19 @@ type Source struct {
 
 // Project a package under active mutable development
 type Project struct {
-	Name           string          `bson:"name"`
-	Source         bson.ObjectId   `bson:"sourceId"`
-	ProjectVersion int64           `bson:"projectVersion"`
-	PackageVersion int64           `bson:"packageVersion"`
-	Graph          bson.ObjectId   `bson:"graphId"`
-	Dependencies   []bson.ObjectId `bson:"packages"`
+	Name           string               `bson:"name"`
+	Source         primitive.ObjectID   `bson:"sourceId"`
+	ProjectVersion int64                `bson:"projectVersion"`
+	PackageVersion int64                `bson:"packageVersion"`
+	Graph          primitive.ObjectID   `bson:"graphId"`
+	Dependencies   []primitive.ObjectID `bson:"packages"`
 }
 
 // Script a runnable script attached to a package
 type Script struct {
-	Name        string          `bson:"name"`
-	Description string          `bson:"description"`
-	Body        string          `bson:"body"`
-	Package     bson.ObjectId   `bson:"package"`
-	Packages    []bson.ObjectId `bson:"packages"`
+	Name        string               `bson:"name"`
+	Description string               `bson:"description"`
+	Body        string               `bson:"body"`
+	Package     primitive.ObjectID   `bson:"package"`
+	Packages    []primitive.ObjectID `bson:"packages"`
 }
