@@ -6,7 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func Schema(client mongo.Client) {
+func CreateSchema(client mongo.Client) {
 	// Connects to or creates the database 'packagebird' in the MongoDB client
 	db := client.Database("packagebird")
 

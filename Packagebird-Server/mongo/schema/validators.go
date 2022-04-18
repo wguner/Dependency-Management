@@ -26,6 +26,7 @@ var requiredCollectionsAndSchemas = map[string]bson.M{
 	"projects":         projectSchema,
 	"scripts":          scriptSchema,
 	"graphs":           graphSchema,
+	"admins":           adminSchema,
 }
 
 // Validation for 'graphs' collections
@@ -148,7 +149,7 @@ var authenticationSchema = bson.M{
 				"bsonType":    "array",
 				"description": "required array of object ids for projects",
 				"items": bson.M{
-					"bsonType": "string",
+					"bsonType": "objectId",
 				},
 			},
 			"isAdmin": bson.M{
@@ -242,6 +243,24 @@ var scriptSchema = bson.M{
 				"items": bson.M{
 					"bsonType": "objectId",
 				},
+			},
+		},
+	},
+}
+
+// Validation for 'admins' collection
+var adminSchema = bson.M{
+	"$jsonSchema": bson.M{
+		"bsonType": "object",
+		"required": []string{"userId", "password"},
+		"properties": bson.M{
+			"name": bson.M{
+				"bsonType":    "objectId",
+				"description": "required object id for user",
+			},
+			"password": bson.M{
+				"bsonType":    "string",
+				"description": "required string password for user",
 			},
 		},
 	},
