@@ -7,10 +7,11 @@ import (
 )
 
 func Schema(client mongo.Client) {
-	// Connects to or creates the database 'packagebird' in the passed MongoDB client
+	// Connects to or creates the database 'packagebird' in the MongoDB client
 	db := client.Database("packagebird")
 
-	// Creates the 'packages' collection with validation
-	db.CreateCollection(context.Background(), "packages", options.CreateCollection().SetValidator(packageSchema))
-
+	// Creates collections and validation schema
+	for collection, schema := range requiredCollectionsAndSchemas {
+		db.CreateCollection(context.Background(), collection, options.CreateCollection().SetValidator(schema))
+	}
 }

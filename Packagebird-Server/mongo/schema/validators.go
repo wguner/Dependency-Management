@@ -16,6 +16,47 @@ var templateSchema = bson.M{
 	},
 }
 
+// List of required collections
+var requiredCollectionsAndSchemas = map[string]bson.M{
+	"packages":         packageSchema,
+	"packagesMetadata": packageMetadataSchema,
+	"users":            userSchema,
+	"authentications":  authenticationSchema,
+	"sources":          sourceSchema,
+	"projects":         projectSchema,
+	"scripts":          scriptSchema,
+	"graphs":           graphSchema,
+}
+
+// Validation for 'graphs' collections
+var graphSchema = bson.M{
+	"$jsonSchema": bson.M{
+		"bsonType": "object",
+		"required": []string{"name", "version", "package", "children"},
+		"properties": bson.M{
+			"name": bson.M{
+				"bsonType":    "string",
+				"description": "required string name of node",
+			},
+			"version": bson.M{
+				"bsonType":    "long",
+				"description": "required long version of node",
+			},
+			"package": bson.M{
+				"bsonType":    "objectId",
+				"description": "required object id for associated package",
+			},
+			"children": bson.M{
+				"bsonType":    "array",
+				"description": "required array of children of node",
+				"items": bson.M{
+					"bsonType": "objectId",
+				},
+			},
+		},
+	},
+}
+
 // Validation for 'packages' collection
 var packageSchema = bson.M{
 	"$jsonSchema": bson.M{
