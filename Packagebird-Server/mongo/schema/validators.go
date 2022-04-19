@@ -1,6 +1,9 @@
 package schema
 
-import "go.mongodb.org/mongo-driver/bson"
+import (
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 // Validator template
 var templateSchema = bson.M{
@@ -121,7 +124,7 @@ var packageMetadataSchema = bson.M{
 var userSchema = bson.M{
 	"$jsonSchema": bson.M{
 		"bsonType": "object",
-		"required": []string{"name", "email"},
+		"required": []string{"name", "email", "authenticationId"},
 		"properties": bson.M{
 			"name": bson.M{
 				"bsonType":    "string",
@@ -130,6 +133,10 @@ var userSchema = bson.M{
 			"email": bson.M{
 				"bsonType":    "string",
 				"description": "required string email address of user",
+			},
+			"authenticationId": bson.M{
+				"bsonType":    primitive.ObjectID{},
+				"description": "required object id for authentication attached to user",
 			},
 		},
 	},

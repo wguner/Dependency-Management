@@ -5,12 +5,14 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"github.com/spf13/cobra"
+	"google.golang.org/grpc"
 	"io/fs"
 	"log"
 	"os"
-
-	"github.com/spf13/cobra"
+	"packagebird/network/grpc/services"
 )
 
 // projectCmd represents the project command
@@ -32,4 +34,16 @@ func createProject(projectName []string) {
 	if err := os.Mkdir(projectName[0], fs.ModePerm); err != nil {
 		log.Fatal("Error creating project directory")
 	}
+	connection, err := grpc.Dial("127.0.0.1:55051")
+	if err != nil {
+		panic(err)
+	}
+	defer connection.Close()
+
+	client := services.NewPackagebirdServicesClient(connection)
+	response, err := client.CreateProject(context.Background(), &services.PackageRequest{Name: projectName[0], Version: 0})
+	if err != nil {
+		panic(err)
+	}
+	log.Print(response.Header)
 }

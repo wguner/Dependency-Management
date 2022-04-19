@@ -5,12 +5,12 @@ option go_package = "./FileTransfer";
 package FileTransfer;
 
 service FileService {
-    rpc Download(Request) returns (stream File) {};
-    rpc Upload(stream File) returns (Response) {};
+    rpc Download(Request) returns (stream Data) {};
+    rpc Upload(stream Data) returns (Response) {};
     rpc NameFile(Request) returns (Response) {};
 }
 
-message File {
+message Data {
     oneof content {
         string name = 1;
         bytes chunk = 2;

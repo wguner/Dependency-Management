@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+option go_package = "packagebird/services";
+
+package services;
+
+service PackagebirdServices {
+  // Create Operations
+  rpc CreateProject(ProjectRequest) returns (OperationResponse) {};
+  rpc CreatePackage(PackageRequest) returns (OperationResponse) {};
+
+  // Dependency Operations
+  rpc AddPackage(PackageRequest) returns (OperationResponse) {};
+  rpc RemovePackage(PackageRequest) returns (OperationResponse) {};
+
+  // Package Operations
+  rpc BuildPackage(PackageRequest) returns (OperationResponse) {};
+  rpc TestPackage(PackageRequest) returns (OperationResponse) {};
+
+  // File Transfer Operations
+  rpc DownloadFile(DownloadRequest) returns (stream File) {};
+  rpc UploadFile(stream File) returns (OperationResponse) {};
+}
+
+message ProjectRequest {
+  string name = 1;
+}
+
+message PackageRequest {
+  string name = 1;
+  int64 version = 2;
+}
+
+message OperationResponse {
+  bool success = 1;
+  string header = 2;
+  string message = 3;
+}
+
+message DownloadRequest {
+  string path = 1;
+}
+
+message File {
+  oneof content {
+    string path = 1;
+    bytes chunk = 2;
+  }
+}

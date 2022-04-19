@@ -32,8 +32,9 @@ type PackageMetadata struct {
 
 // User in system
 type User struct {
-	Name  string `bson:"name"`
-	Email string `bson:"email"`
+	Name           string             `bson:"name"`
+	Email          string             `bson:"email"`
+	Authentication primitive.ObjectID `bson:"authenticationId"`
 }
 
 // Authentication entry for particular user in system
