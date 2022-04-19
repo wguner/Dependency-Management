@@ -219,6 +219,10 @@ func GetPackages(client mongo.Client) ([]structures.Package, error) {
 // --- Package Set ---
 
 func SetPackageByObjectId(client mongo.Client, objectId primitive.ObjectID) error {
+	err := SetObjectInCollectionNameByObjectId(client, collections.Packages.String(), objectId, structures.Package{})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -253,6 +257,10 @@ func GetPackagesMetadata(client mongo.Client) ([]structures.PackageMetadata, err
 // --- Package Metadata Set ---
 
 func SetPackageMetadataByObjectId(client mongo.Client, objectId primitive.ObjectID) error {
+	err := SetObjectInCollectionNameByObjectId(client, collections.PackagesMetadata.String(), objectId, structures.PackageMetadata{})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -289,6 +297,10 @@ func GetUsers(client mongo.Client) ([]structures.User, error) {
 // --- User Set ---
 
 func SetUserByObjectId(client mongo.Client, objectId primitive.ObjectID) error {
+	err := SetObjectInCollectionNameByObjectId(client, collections.Users.String(), objectId, structures.User{})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -313,6 +325,10 @@ func GetAuthentications(client mongo.Client) ([]structures.Authentication, error
 // --- Authentication Set ---
 
 func SetAuthenticationByObjectId(client mongo.Client, objectId primitive.ObjectID) error {
+	err := SetObjectInCollectionNameByObjectId(client, collections.Authentications.String(), objectId, structures.Authentication{})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -337,6 +353,10 @@ func GetSources(client mongo.Client) ([]structures.Source, error) {
 // --- Source Set ---
 
 func SetSourceByObjectId(client mongo.Client, objectId primitive.ObjectID) error {
+	err := SetObjectInCollectionNameByObjectId(client, collections.Authentications.String(), objectId, structures.Source{})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -372,6 +392,10 @@ func GetProjects(client mongo.Client) ([]structures.Project, error) {
 // --- Project Set ---
 
 func SetProjectByObjectId(client mongo.Client, objectId primitive.ObjectID) error {
+	err := SetObjectInCollectionNameByObjectId(client, collections.Projects.String(), objectId, structures.Project{})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -396,6 +420,10 @@ func GetScriptByName(client mongo.Client, name string) (*structures.Script, erro
 // --- Script Set ---
 
 func SetScriptByObjectId(client mongo.Client, objectId primitive.ObjectID) error {
+	err := SetObjectInCollectionNameByObjectId(client, collections.Scripts.String(), objectId, structures.Script{})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -428,5 +456,9 @@ func GetGraphs(client mongo.Client) ([]structures.Graph, error) {
 // --- Graph Set ---
 
 func SetGraphByObjectId(client mongo.Client, objectId primitive.ObjectID) error {
+	err := SetObjectInCollectionNameByObjectId(client, collections.Graphs.String(), objectId, structures.Graph{})
+	if err != nil {
+		return err
+	}
 	return nil
 }
