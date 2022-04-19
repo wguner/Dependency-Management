@@ -164,7 +164,7 @@ var authenticationSchema = bson.M{
 var sourceSchema = bson.M{
 	"$jsonSchema": bson.M{
 		"bsonType": "object",
-		"required": []string{"path", "lastAccessed"},
+		"required": []string{"path", "lastAccessedBy"},
 		"properties": bson.M{
 			"path": bson.M{
 				"bsonType":    "string",

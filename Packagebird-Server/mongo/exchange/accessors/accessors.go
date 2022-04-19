@@ -5,6 +5,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	collections "packagebird-server/mongo/enums"
 	"packagebird-server/mongo/structures"
@@ -12,6 +13,38 @@ import (
 )
 
 // --- Utils ---
+
+// --- Filter Utils ---
+
+func filterByObjectId(objectId primitive.ObjectID) *bson.M {
+	var filter = &bson.M{
+		"_id": objectId,
+	}
+	return filter
+}
+
+func filterByNameAndVersion(name string, version int64) *bson.M {
+	filter := &bson.M{
+		"$and": []bson.M{
+			bson.M{
+				"name": name,
+			},
+			bson.M{
+				"version": version,
+			},
+		},
+	}
+	return filter
+}
+
+func filterByName(name string) *bson.M {
+	filter := &bson.M{
+		"name": name,
+	}
+	return filter
+}
+
+// --- Get Utils ---
 
 func GetDocumentFromCollectionNameByObjectId(client mongo.Client, collectionName string, objectId primitive.ObjectID) (*mongo.SingleResult, error) {
 	collection := client.Database("packagebird").Collection(collectionName)
@@ -62,6 +95,61 @@ func GetObjectsFromCollectionName(client mongo.Client, collectionName string, de
 		results = reflect.Append(results.Elem(), reflect.ValueOf(result))
 	}
 	return results.Interface(), nil
+}
+
+func GetObjectsFromCollectionNameAndFilter(client mongo.Client, collectionName string, decodeType interface{}, filter interface{}) (interface{}, error) {
+	collection := client.Database("packagebird").Collection(collectionName)
+	documents, err := collection.Find(context.Background(), filter)
+	if err != nil {
+		return nil, err
+	}
+	defer documents.Close(context.Background())
+
+	results := reflect.New(reflect.SliceOf(reflect.TypeOf(decodeType)))
+	for documents.Next(context.Background()) {
+		result := &decodeType
+		err := documents.Decode(result)
+		if err != nil {
+			return nil, err
+		}
+		results = reflect.Append(results.Elem(), reflect.ValueOf(result))
+	}
+	return results.Interface(), nil
+}
+
+func GetObjectFromCollectionNameAndFilter(client mongo.Client, collectionName string, decodeType interface{}, filter interface{}) (interface{}, error) {
+	collection := client.Database("packagebird").Collection(collectionName)
+	document := collection.FindOne(context.Background(), filter)
+
+	result := decodeType
+	err := document.Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// --- Set Utils
+
+func SetDocumentInCollectionNameByObjectId(client mongo.Client, collectionName string, objectId primitive.ObjectID, document []byte) error {
+	collection := client.Database("packagebird").Collection(collectionName)
+	_, err := collection.UpdateOne(context.Background(), bson.M{"_id": objectId}, document, options.Update().SetUpsert(true))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func SetObjectInCollectionNameByObjectId(client mongo.Client, collectionName string, objectId primitive.ObjectID, toObject interface{}) error {
+	marshall, err := bson.Marshal(toObject)
+	if err != nil {
+		return err
+	}
+	err = SetDocumentInCollectionNameByObjectId(client, collectionName, objectId, marshall)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // --- Package Get ---
@@ -131,8 +219,21 @@ func GetPackages(client mongo.Client) ([]structures.Package, error) {
 // --- Package Metadata Get ---
 
 func GetPackageMetadataByNameAndVersion(client mongo.Client, name string, version int64) (*structures.PackageMetadata, error) {
-	// TODO: To be filled
-	return nil, nil
+	var filter = &bson.M{
+		"$and": []bson.M{
+			bson.M{
+				"name": name,
+			},
+			bson.M{
+				"version": version,
+			},
+		},
+	}
+	obj, err := GetObjectFromCollectionNameAndFilter(client, collections.PackagesMetadata.String(), structures.PackageMetadata{}, filter)
+	if err != nil {
+		return nil, err
+	}
+	return obj.(*structures.PackageMetadata), nil
 }
 
 func GetPackagesMetadata(client mongo.Client) ([]structures.PackageMetadata, error) {
@@ -154,9 +255,15 @@ func GetUserByObjectId(client mongo.Client, objectId primitive.ObjectID) (*struc
 	return &result, nil
 }
 
-func GetUserByName(client mongo.Client, name string) ([]structures.User, error) {
-	// TODO: To be filled
-	return nil, nil
+func GetUserByName(client mongo.Client, name string) (*structures.User, error) {
+	var filter = &bson.M{
+		"name": name,
+	}
+	obj, err := GetObjectFromCollectionNameAndFilter(client, collections.Users.String(), structures.User{}, filter)
+	if err != nil {
+		return nil, err
+	}
+	return obj.(*structures.User), nil
 }
 
 func GetUsers(client mongo.Client) ([]structures.User, error) {
@@ -214,8 +321,14 @@ func GetProjectByObjectId(client mongo.Client, objectId primitive.ObjectID) (*st
 }
 
 func GetProjectByName(client mongo.Client, name string) (*structures.Project, error) {
-	// TODO: To be filled
-	return nil, nil
+	var filter = &bson.M{
+		"name": name,
+	}
+	obj, err := GetObjectFromCollectionNameAndFilter(client, collections.Projects.String(), structures.Project{}, filter)
+	if err != nil {
+		return nil, err
+	}
+	return obj.(*structures.Project), nil
 }
 
 func GetProjects(client mongo.Client) ([]structures.Project, error) {
@@ -236,9 +349,12 @@ func GetScriptByObjectId(client mongo.Client, objectId primitive.ObjectID) (*str
 	return object.(*structures.Script), nil
 }
 
-func GetScriptByName(client mongo.Client) (*structures.Script, error) {
-	// TODO: To be filled
-	return nil, nil
+func GetScriptByName(client mongo.Client, name string) (*structures.Script, error) {
+	obj, err := GetObjectFromCollectionNameAndFilter(client, collections.Scripts.String(), filterByName(name), structures.Script{})
+	if err != nil {
+		return nil, err
+	}
+	return obj.(*structures.Script), nil
 }
 
 // --- Graph Get ---
@@ -252,8 +368,11 @@ func GetGraphByObjectId(client mongo.Client, objectId primitive.ObjectID) (*stru
 }
 
 func GetGraphByName(client mongo.Client, name string) (*structures.Graph, error) {
-	// TODO: To be filled
-	return nil, nil
+	obj, err := GetObjectFromCollectionNameAndFilter(client, collections.Users.String(), filterByName(name), structures.Graph{})
+	if err != nil {
+		return nil, err
+	}
+	return obj.(*structures.Graph), nil
 }
 
 func GetGraphs(client mongo.Client) ([]structures.Graph, error) {

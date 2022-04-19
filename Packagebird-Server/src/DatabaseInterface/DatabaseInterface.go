@@ -2,7 +2,6 @@ package DatabaseInterface
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -23,11 +22,11 @@ func MongoDBServerConnect(uri string) (*mongo.Client, error) {
 	// Conducts an initial ping operation to check if connection to MongoDB server service successful.
 	err = mongodbClient.Ping(context.Background(), readpref.Primary())
 	if err != nil {
-		log.Printf("ERror encountered with initial ping to %v...", uri)
+		log.Printf("Error encountered with initial ping to %v...", uri)
 	}
 
 	// Assuming above steps are successful, notify server terminal.
-	fmt.Println("Successfully connected to local MongoDB server...")
+	log.Printf("Successfully connected to local MongoDB server...")
 
 	return mongodbClient, nil
 }
