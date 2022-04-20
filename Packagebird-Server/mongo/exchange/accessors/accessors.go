@@ -14,6 +14,23 @@ import (
 
 // --- Utils ---
 
+func ErrorCheck(err error) error {
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func Filter[T any](arr []T, filter func(elem T) bool) []T {
+	var r []T
+	for i := range arr {
+		if filter(arr[i]) {
+			r = append(r, arr[i])
+		}
+	}
+	return r
+}
+
 // --- Filter Utils ---
 
 func filterByObjectId(objectId primitive.ObjectID) *bson.M {
@@ -62,7 +79,6 @@ func GetDocumentsFromCollectionName(client mongo.Client, collectionName string) 
 		log.Printf("Error retrieving many documents from collecton %v: %v", collectionName, err)
 		return nil, err
 	}
-	defer result.Close(context.Background())
 
 	return result, nil
 }
@@ -86,13 +102,17 @@ func GetObjectsFromCollectionName(client mongo.Client, collectionName string, de
 		return nil, err
 	}
 	results := reflect.New(reflect.SliceOf(reflect.TypeOf(decodeType)))
+	result := decodeType
+	documents.Decode(&result)
+	results = reflect.Append(results.Elem(), reflect.ValueOf(result))
+
 	for documents.Next(context.Background()) {
 		result := &decodeType
 		err := documents.Decode(result)
 		if err != nil {
 			return nil, err
 		}
-		results = reflect.Append(results.Elem(), reflect.ValueOf(result))
+		results = reflect.Append(results, reflect.ValueOf(result))
 	}
 	return results.Interface(), nil
 }
@@ -129,7 +149,7 @@ func GetObjectFromCollectionNameAndFilter(client mongo.Client, collectionName st
 	return &result, nil
 }
 
-// --- Set Utils
+// --- Set Utils ---
 
 func SetDocumentInCollectionNameByObjectId(client mongo.Client, collectionName string, objectId primitive.ObjectID, document []byte) error {
 	collection := client.Database("packagebird").Collection(collectionName)
@@ -146,6 +166,17 @@ func SetObjectInCollectionNameByObjectId(client mongo.Client, collectionName str
 		return err
 	}
 	err = SetDocumentInCollectionNameByObjectId(client, collectionName, objectId, marshall)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// --- Create Utils ---
+
+func CreateDocumentInCollection(client mongo.Client, collectionName collections.Collection, document interface{}) error {
+	collection := client.Database("packagebird").Collection(collectionName.String())
+	_, err := collection.InsertOne(context.Background(), document)
 	if err != nil {
 		return err
 	}
@@ -218,6 +249,10 @@ func GetPackages(client mongo.Client) ([]structures.Package, error) {
 
 // --- Package Set ---
 
+func CreatePackage(client mongo.Client, pkg structures.Package) error {
+	return ErrorCheck(CreateDocumentInCollection(client, collections.Packages, pkg))
+}
+
 func SetPackageByObjectId(client mongo.Client, objectId primitive.ObjectID) error {
 	err := SetObjectInCollectionNameByObjectId(client, collections.Packages.String(), objectId, structures.Package{})
 	if err != nil {
@@ -225,6 +260,8 @@ func SetPackageByObjectId(client mongo.Client, objectId primitive.ObjectID) erro
 	}
 	return nil
 }
+
+// --- Package Create
 
 // --- Package Metadata Get ---
 
@@ -262,6 +299,12 @@ func SetPackageMetadataByObjectId(client mongo.Client, objectId primitive.Object
 		return err
 	}
 	return nil
+}
+
+// --- Package Metadata Create ---
+
+func CreatePackageMetadata(client mongo.Client, packageMetadata structures.PackageMetadata) error {
+	return ErrorCheck(CreateDocumentInCollection(client, collections.PackagesMetadata, packageMetadata))
 }
 
 // --- User Get ---
@@ -304,6 +347,12 @@ func SetUserByObjectId(client mongo.Client, objectId primitive.ObjectID) error {
 	return nil
 }
 
+// --- User Create ---
+
+func CreateUser(client mongo.Client, user structures.User) error {
+	return ErrorCheck(CreateDocumentInCollection(client, collections.Users, user))
+}
+
 // --- Authentication Get ---
 
 func GetAuthenticationByUserObjectId(client mongo.Client, objectId primitive.ObjectID) (*structures.Authentication, error) {
@@ -332,6 +381,12 @@ func SetAuthenticationByObjectId(client mongo.Client, objectId primitive.ObjectI
 	return nil
 }
 
+// --- Authentication Create ---
+
+func CreateAuthentication(client mongo.Client, authentication structures.Authentication) error {
+	return ErrorCheck(CreateDocumentInCollection(client, collections.Authentications, authentication))
+}
+
 // --- Source Get ---
 
 func GetSourceByObjectId(client mongo.Client, objectId primitive.ObjectID) (*structures.Source, error) {
@@ -354,6 +409,16 @@ func GetSources(client mongo.Client) ([]structures.Source, error) {
 
 func SetSourceByObjectId(client mongo.Client, objectId primitive.ObjectID) error {
 	err := SetObjectInCollectionNameByObjectId(client, collections.Authentications.String(), objectId, structures.Source{})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// --- Source Create ---
+
+func CreateSource(client mongo.Client, source structures.Source) error {
+	err := CreateDocumentInCollection(client, collections.Sources, source)
 	if err != nil {
 		return err
 	}
@@ -399,6 +464,12 @@ func SetProjectByObjectId(client mongo.Client, objectId primitive.ObjectID) erro
 	return nil
 }
 
+// --- Project Create ---
+
+func CreateProject(client mongo.Client, project structures.Project) error {
+	return ErrorCheck(CreateDocumentInCollection(client, collections.Projects, project))
+}
+
 // --- Script Get ---
 
 func GetScriptByObjectId(client mongo.Client, objectId primitive.ObjectID) (*structures.Script, error) {
@@ -425,6 +496,12 @@ func SetScriptByObjectId(client mongo.Client, objectId primitive.ObjectID) error
 		return err
 	}
 	return nil
+}
+
+// --- Script Create ---
+
+func CreateScript(client mongo.Client, script structures.Script) error {
+	return ErrorCheck(CreateDocumentInCollection(client, collections.Scripts, script))
 }
 
 // --- Graph Get ---
@@ -461,4 +538,10 @@ func SetGraphByObjectId(client mongo.Client, objectId primitive.ObjectID) error 
 		return err
 	}
 	return nil
+}
+
+// --- Graph Create ---
+
+func CreateGraph(client mongo.Client, graph structures.Graph) error {
+	return ErrorCheck(CreateDocumentInCollection(client, collections.Graphs, graph))
 }

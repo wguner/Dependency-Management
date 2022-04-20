@@ -1,13 +1,13 @@
 syntax = "proto3";
 
-option go_package = "packagebird/services";
+option go_package = "grpc/services";
 
 package services;
 
 service PackagebirdServices {
   // Create Operations
   rpc CreateProject(ProjectRequest) returns (OperationResponse) {};
-  rpc CreatePackage(PackageRequest) returns (OperationResponse) {};
+  rpc CreatePackage(ProjectRequest) returns (OperationResponse) {};
 
   // Dependency Operations
   rpc AddPackage(PackageRequest) returns (OperationResponse) {};
@@ -20,6 +20,9 @@ service PackagebirdServices {
   // File Transfer Operations
   rpc DownloadFile(DownloadRequest) returns (stream File) {};
   rpc UploadFile(stream File) returns (OperationResponse) {};
+
+  // Member Operations
+  // 
 }
 
 message ProjectRequest {

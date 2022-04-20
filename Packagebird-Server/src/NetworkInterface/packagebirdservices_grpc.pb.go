@@ -4,7 +4,7 @@
 // - protoc             v3.20.0
 // source: packagebirdservices.proto
 
-package services
+package NetworkInterface
 
 import (
 	context "context"
@@ -23,8 +23,8 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PackagebirdServicesClient interface {
 	// Create Operations
-	CreateProject(ctx context.Context, in *PackageRequest, opts ...grpc.CallOption) (*OperationResponse, error)
-	CreatePackage(ctx context.Context, in *PackageRequest, opts ...grpc.CallOption) (*OperationResponse, error)
+	CreateProject(ctx context.Context, in *ProjectRequest, opts ...grpc.CallOption) (*OperationResponse, error)
+	CreatePackage(ctx context.Context, in *ProjectRequest, opts ...grpc.CallOption) (*OperationResponse, error)
 	// Dependency Operations
 	AddPackage(ctx context.Context, in *PackageRequest, opts ...grpc.CallOption) (*OperationResponse, error)
 	RemovePackage(ctx context.Context, in *PackageRequest, opts ...grpc.CallOption) (*OperationResponse, error)
@@ -44,7 +44,7 @@ func NewPackagebirdServicesClient(cc grpc.ClientConnInterface) PackagebirdServic
 	return &packagebirdServicesClient{cc}
 }
 
-func (c *packagebirdServicesClient) CreateProject(ctx context.Context, in *PackageRequest, opts ...grpc.CallOption) (*OperationResponse, error) {
+func (c *packagebirdServicesClient) CreateProject(ctx context.Context, in *ProjectRequest, opts ...grpc.CallOption) (*OperationResponse, error) {
 	out := new(OperationResponse)
 	err := c.cc.Invoke(ctx, "/services.PackagebirdServices/CreateProject", in, out, opts...)
 	if err != nil {
@@ -53,7 +53,7 @@ func (c *packagebirdServicesClient) CreateProject(ctx context.Context, in *Packa
 	return out, nil
 }
 
-func (c *packagebirdServicesClient) CreatePackage(ctx context.Context, in *PackageRequest, opts ...grpc.CallOption) (*OperationResponse, error) {
+func (c *packagebirdServicesClient) CreatePackage(ctx context.Context, in *ProjectRequest, opts ...grpc.CallOption) (*OperationResponse, error) {
 	out := new(OperationResponse)
 	err := c.cc.Invoke(ctx, "/services.PackagebirdServices/CreatePackage", in, out, opts...)
 	if err != nil {
@@ -169,8 +169,8 @@ func (x *packagebirdServicesUploadFileClient) CloseAndRecv() (*OperationResponse
 // for forward compatibility
 type PackagebirdServicesServer interface {
 	// Create Operations
-	CreateProject(context.Context, *PackageRequest) (*OperationResponse, error)
-	CreatePackage(context.Context, *PackageRequest) (*OperationResponse, error)
+	CreateProject(context.Context, *ProjectRequest) (*OperationResponse, error)
+	CreatePackage(context.Context, *ProjectRequest) (*OperationResponse, error)
 	// Dependency Operations
 	AddPackage(context.Context, *PackageRequest) (*OperationResponse, error)
 	RemovePackage(context.Context, *PackageRequest) (*OperationResponse, error)
@@ -187,10 +187,10 @@ type PackagebirdServicesServer interface {
 type UnimplementedPackagebirdServicesServer struct {
 }
 
-func (UnimplementedPackagebirdServicesServer) CreateProject(context.Context, *PackageRequest) (*OperationResponse, error) {
+func (UnimplementedPackagebirdServicesServer) CreateProject(context.Context, *ProjectRequest) (*OperationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateProject not implemented")
 }
-func (UnimplementedPackagebirdServicesServer) CreatePackage(context.Context, *PackageRequest) (*OperationResponse, error) {
+func (UnimplementedPackagebirdServicesServer) CreatePackage(context.Context, *ProjectRequest) (*OperationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreatePackage not implemented")
 }
 func (UnimplementedPackagebirdServicesServer) AddPackage(context.Context, *PackageRequest) (*OperationResponse, error) {
@@ -220,12 +220,12 @@ type UnsafePackagebirdServicesServer interface {
 	mustEmbedUnimplementedPackagebirdServicesServer()
 }
 
-func RegisterPackagebirdServicesServer(s grpc.ServiceRegistrar, srv PackagebirdServicesServer) {
+func RegisterPackagebirdServicesServer(s grpc.ServiceRegistrar, srv *GRPCServer) {
 	s.RegisterService(&PackagebirdServices_ServiceDesc, srv)
 }
 
 func _PackagebirdServices_CreateProject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PackageRequest)
+	in := new(ProjectRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -237,13 +237,13 @@ func _PackagebirdServices_CreateProject_Handler(srv interface{}, ctx context.Con
 		FullMethod: "/services.PackagebirdServices/CreateProject",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PackagebirdServicesServer).CreateProject(ctx, req.(*PackageRequest))
+		return srv.(PackagebirdServicesServer).CreateProject(ctx, req.(*ProjectRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _PackagebirdServices_CreatePackage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PackageRequest)
+	in := new(ProjectRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -255,7 +255,7 @@ func _PackagebirdServices_CreatePackage_Handler(srv interface{}, ctx context.Con
 		FullMethod: "/services.PackagebirdServices/CreatePackage",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PackagebirdServicesServer).CreatePackage(ctx, req.(*PackageRequest))
+		return srv.(PackagebirdServicesServer).CreatePackage(ctx, req.(*ProjectRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
