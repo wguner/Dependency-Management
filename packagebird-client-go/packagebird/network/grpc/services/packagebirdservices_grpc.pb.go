@@ -220,7 +220,7 @@ type UnsafePackagebirdServicesServer interface {
 	mustEmbedUnimplementedPackagebirdServicesServer()
 }
 
-func RegisterPackagebirdServicesServer(s grpc.ServiceRegistrar, srv *GRPCServer) {
+func RegisterPackagebirdServicesServer(s grpc.ServiceRegistrar, srv PackagebirdServicesServer) {
 	s.RegisterService(&PackagebirdServices_ServiceDesc, srv)
 }
 

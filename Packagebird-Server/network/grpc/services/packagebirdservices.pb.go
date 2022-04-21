@@ -4,7 +4,7 @@
 // 	protoc        v3.20.0
 // source: packagebirdservices.proto
 
-package NetworkInterface
+package services
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"

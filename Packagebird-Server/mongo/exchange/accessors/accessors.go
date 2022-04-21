@@ -74,7 +74,7 @@ func GetDocumentFromCollectionNameByObjectId(client mongo.Client, collectionName
 
 func GetDocumentsFromCollectionName(client mongo.Client, collectionName string) (*mongo.Cursor, error) {
 	collection := client.Database("packagebird").Collection(collectionName)
-	result, err := collection.Find(context.Background(), bson.M{})
+	result, err := collection.Find(context.Background(), bson.D{{}})
 	if err != nil {
 		log.Printf("Error retrieving many documents from collecton %v: %v", collectionName, err)
 		return nil, err
@@ -88,12 +88,12 @@ func GetObjectFromCollectionNameByObjectId(client mongo.Client, collectionName s
 	if err != nil {
 		return nil, err
 	}
-	result := decodeType
-	err = document.Decode(result)
+	result := &decodeType
+	err = document.Decode(*result)
 	if err != nil {
 		return nil, err
 	}
-	return &result, nil
+	return *result, nil
 }
 
 func GetObjectsFromCollectionName(client mongo.Client, collectionName string, decodeType interface{}) (interface{}, error) {
@@ -101,9 +101,10 @@ func GetObjectsFromCollectionName(client mongo.Client, collectionName string, de
 	if err != nil {
 		return nil, err
 	}
+	documents.Next(context.Background())
 	results := reflect.New(reflect.SliceOf(reflect.TypeOf(decodeType)))
 	result := decodeType
-	documents.Decode(&result)
+	documents.Decode(result)
 	results = reflect.Append(results.Elem(), reflect.ValueOf(result))
 
 	for documents.Next(context.Background()) {
@@ -141,12 +142,12 @@ func GetObjectFromCollectionNameAndFilter(client mongo.Client, collectionName st
 	collection := client.Database("packagebird").Collection(collectionName)
 	document := collection.FindOne(context.Background(), filter)
 
-	result := decodeType
-	err := document.Decode(&result)
+	result := &decodeType
+	err := document.Decode(*result)
 	if err != nil {
 		return nil, err
 	}
-	return &result, nil
+	return *result, nil
 }
 
 // --- Set Utils ---
@@ -390,19 +391,19 @@ func CreateAuthentication(client mongo.Client, authentication structures.Authent
 // --- Source Get ---
 
 func GetSourceByObjectId(client mongo.Client, objectId primitive.ObjectID) (*structures.Source, error) {
-	object, err := GetObjectFromCollectionNameByObjectId(client, collections.Sources.String(), objectId, structures.Source{})
+	object, err := GetObjectFromCollectionNameByObjectId(client, collections.Sources.String(), objectId, &structures.Source{})
 	if err != nil {
 		return nil, err
 	}
 	return object.(*structures.Source), nil
 }
 
-func GetSources(client mongo.Client) ([]structures.Source, error) {
-	objects, err := GetObjectsFromCollectionName(client, collections.Sources.String(), structures.Source{})
+func GetSources(client mongo.Client) ([]*structures.Source, error) {
+	objects, err := GetObjectsFromCollectionName(client, collections.Sources.String(), &structures.Source{})
 	if err != nil {
 		return nil, err
 	}
-	return objects.([]structures.Source), nil
+	return objects.([]*structures.Source), nil
 }
 
 // --- Source Set ---
@@ -439,7 +440,7 @@ func GetProjectByName(client mongo.Client, name string) (*structures.Project, er
 	var filter = &bson.M{
 		"name": name,
 	}
-	obj, err := GetObjectFromCollectionNameAndFilter(client, collections.Projects.String(), structures.Project{}, filter)
+	obj, err := GetObjectFromCollectionNameAndFilter(client, collections.Projects.String(), &structures.Project{}, filter)
 	if err != nil {
 		return nil, err
 	}
@@ -515,7 +516,7 @@ func GetGraphByObjectId(client mongo.Client, objectId primitive.ObjectID) (*stru
 }
 
 func GetGraphByName(client mongo.Client, name string) (*structures.Graph, error) {
-	obj, err := GetObjectFromCollectionNameAndFilter(client, collections.Users.String(), filterByName(name), structures.Graph{})
+	obj, err := GetObjectFromCollectionNameAndFilter(client, collections.Graphs.String(), &structures.Graph{}, filterByName(name))
 	if err != nil {
 		return nil, err
 	}

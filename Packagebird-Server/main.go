@@ -1,14 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"packagebird-server/const"
 	"packagebird-server/filesystem"
 	"packagebird-server/global"
 	"packagebird-server/mongo/schema"
+	server "packagebird-server/network"
 	"packagebird-server/src/DatabaseInterface"
-	"packagebird-server/src/NetworkInterface"
 )
 
 // Entry-point for packagebird server
@@ -34,7 +33,7 @@ func main() {
 	}
 
 	// Begin listening for incoming request
-	err = NetworkInterface.PackagebirdServerStart(fmt.Sprintf("%v:%v", _const.DefaultPublicListenAddress, _const.DefaultListenAddressPort), global.GlobalMongoClient)
+	err = server.StartServicesServer("0.0.0.0:55051", global.GlobalMongoClient)
 	if err != nil {
 		log.Fatal(err)
 	}

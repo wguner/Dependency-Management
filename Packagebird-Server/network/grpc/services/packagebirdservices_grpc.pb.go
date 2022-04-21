@@ -4,7 +4,7 @@
 // - protoc             v3.20.0
 // source: packagebirdservices.proto
 
-package NetworkInterface
+package services
 
 import (
 	context "context"
@@ -220,7 +220,7 @@ type UnsafePackagebirdServicesServer interface {
 	mustEmbedUnimplementedPackagebirdServicesServer()
 }
 
-func RegisterPackagebirdServicesServer(s grpc.ServiceRegistrar, srv *GRPCServer) {
+func RegisterPackagebirdServicesServer(s grpc.ServiceRegistrar, srv PackagebirdServicesServer) {
 	s.RegisterService(&PackagebirdServices_ServiceDesc, srv)
 }
 

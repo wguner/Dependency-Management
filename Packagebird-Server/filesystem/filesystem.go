@@ -39,16 +39,7 @@ func CreateSubdirectory(path string) error {
 }
 
 func CreateProjectSourceDirectory(name string) error {
-	path := fmt.Sprintf("/projects/%v", name)
-	err := CreateSubdirectory(filepath.FromSlash(path))
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func CreatePackageSourceDirectory(name string) error {
-	path := fmt.Sprintf("/packages/%v", name)
+	path := fmt.Sprintf("projects/%v", name)
 	err := CreateSubdirectory(filepath.FromSlash(path))
 	if err != nil {
 		return err

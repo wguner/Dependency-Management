@@ -6,7 +6,7 @@ require (
 	github.com/arduino/go-paths-helper v1.2.0
 	github.com/stretchr/testify v1.7.0
 	google.golang.org/grpc v1.43.0
-	google.golang.org/protobuf v1.25.0
+	google.golang.org/protobuf v1.26.0
 )
 
 require (
@@ -28,7 +28,7 @@ require (
 
 require (
 	github.com/codeclysm/extract/v3 v3.0.2
-	github.com/golang/protobuf v1.4.3 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
 	go.mongodb.org/mongo-driver v1.8.2
 	golang.org/x/net v0.0.0-20200822124328-c89045814202 // indirect
 	golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd // indirect

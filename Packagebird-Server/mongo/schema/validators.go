@@ -189,8 +189,12 @@ var sourceSchema = bson.M{
 var projectSchema = bson.M{
 	"$jsonSchema": bson.M{
 		"bsonType": "object",
-		"required": []string{"name", "sourceId", "projectVersion", "packageVersion", "graphId", "packages"},
+		"required": []string{"_id", "name", "sourceId", "projectVersion", "packageVersion", "graphId", "packages"},
 		"properties": bson.M{
+			"_id": bson.M{
+				"bsonType":    primitive.ObjectID{},
+				"description": "required object id of project",
+			},
 			"name": bson.M{
 				"bsonType":    "string",
 				"description": "required string name of project",

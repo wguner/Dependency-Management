@@ -6,22 +6,13 @@ import (
 	"log"
 	"net"
 	fileTransfer "packagebird-server/src/NetworkInterface/FileTransfer"
-	serverUtils "packagebird-server/src/NetworkInterface/ServerUtils"
 	buildtest "packagebird-server/src/NetworkInterface/buildtest"
+	interfaces "packagebird-server/src/NetworkInterface/interfaces"
 	listcontent "packagebird-server/src/NetworkInterface/listcontent"
 	member_operations "packagebird-server/src/NetworkInterface/member_operations"
 )
 
 // All to-be-implemented gRPC methods must be added to this structure
-type GRPCServer struct {
-	fileTransfer.UnimplementedFileServiceServer
-	serverUtils.UnimplementedServerUtilsServicesServer
-	listcontent.UnimplementedListContentServicesServer
-	buildtest.UnimplementedBuildTestServicesServer
-	member_operations.UnimplementedMemberCRUDServicesServer
-	member_operations.UnimplementedMemberAuthenticationServer
-	UnimplementedPackagebirdServicesServer
-}
 
 // Global mongoDBClient reference
 var mongoDBClientGlobal *mongo.Client
@@ -43,13 +34,11 @@ func PackagebirdServerStart(address string, mongodbClient *mongo.Client) error {
 	server := grpc.NewServer()
 
 	// Register passed functions with implementations, must add each set of operations
-	RegisterPackagebirdServicesServer(server, &GRPCServer{})
-	fileTransfer.RegisterFileServiceServer(server, &GRPCServer{})
-	serverUtils.RegisterServerUtilsServicesServer(server, &GRPCServer{})
-	listcontent.RegisterListContentServicesServer(server, &GRPCServer{})
-	buildtest.RegisterBuildTestServicesServer(server, &GRPCServer{})
-	member_operations.RegisterMemberCRUDServicesServer(server, &GRPCServer{})
-	member_operations.RegisterMemberAuthenticationServer(server, &GRPCServer{})
+	fileTransfer.RegisterFileServiceServer(server, &interfaces.GRPCServer{})
+	listcontent.RegisterListContentServicesServer(server, &interfaces.GRPCServer{})
+	buildtest.RegisterBuildTestServicesServer(server, &interfaces.GRPCServer{})
+	member_operations.RegisterMemberCRUDServicesServer(server, &interfaces.GRPCServer{})
+	member_operations.RegisterMemberAuthenticationServer(server, &interfaces.GRPCServer{})
 
 	log.Print("Registered gRPC methods on server...")
 
