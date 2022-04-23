@@ -101,21 +101,18 @@ func GetObjectsFromCollectionName(client mongo.Client, collectionName string, de
 	if err != nil {
 		return nil, err
 	}
-	documents.Next(context.Background())
-	results := reflect.New(reflect.SliceOf(reflect.TypeOf(decodeType)))
-	result := decodeType
-	documents.Decode(result)
-	results = reflect.Append(results.Elem(), reflect.ValueOf(result))
 
+	values := reflect.ValueOf(decodeType).Elem()
+	slices := values.Slice(0, values.Cap())
 	for documents.Next(context.Background()) {
-		result := &decodeType
-		err := documents.Decode(result)
-		if err != nil {
+		element := reflect.New(slices.Type().Elem())
+		if err := documents.Decode(element.Interface()); err != nil {
 			return nil, err
 		}
-		results = reflect.Append(results, reflect.ValueOf(result))
+		slices = reflect.Append(slices, element.Elem())
 	}
-	return results.Interface(), nil
+	values.Set(slices)
+	return values.Interface(), nil
 }
 
 func GetObjectsFromCollectionNameAndFilter(client mongo.Client, collectionName string, decodeType interface{}, filter interface{}) (interface{}, error) {
@@ -448,11 +445,12 @@ func GetProjectByName(client mongo.Client, name string) (*structures.Project, er
 }
 
 func GetProjects(client mongo.Client) ([]structures.Project, error) {
-	objects, err := GetObjectsFromCollectionName(client, collections.Projects.String(), structures.Project{})
+	var results []structures.Project
+	_, err := GetObjectsFromCollectionName(client, collections.Projects.String(), &results)
 	if err != nil {
 		return nil, err
 	}
-	return objects.([]structures.Project), nil
+	return results, nil
 }
 
 // --- Project Set ---

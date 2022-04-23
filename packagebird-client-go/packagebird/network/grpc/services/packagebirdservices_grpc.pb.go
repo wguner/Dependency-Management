@@ -4,7 +4,7 @@
 // - protoc             v3.20.0
 // source: packagebirdservices.proto
 
-package NetworkInterface
+package services
 
 import (
 	context "context"
@@ -31,6 +31,9 @@ type PackagebirdServicesClient interface {
 	// Package Operations
 	BuildPackage(ctx context.Context, in *PackageRequest, opts ...grpc.CallOption) (*OperationResponse, error)
 	TestPackage(ctx context.Context, in *PackageRequest, opts ...grpc.CallOption) (*OperationResponse, error)
+	// Get Operations
+	GetPackages(ctx context.Context, in *Blank, opts ...grpc.CallOption) (*PackageList, error)
+	GetProjects(ctx context.Context, in *Blank, opts ...grpc.CallOption) (*ProjectList, error)
 	// File Transfer Operations
 	DownloadFile(ctx context.Context, in *DownloadRequest, opts ...grpc.CallOption) (PackagebirdServices_DownloadFileClient, error)
 	UploadFile(ctx context.Context, opts ...grpc.CallOption) (PackagebirdServices_UploadFileClient, error)
@@ -92,6 +95,24 @@ func (c *packagebirdServicesClient) BuildPackage(ctx context.Context, in *Packag
 func (c *packagebirdServicesClient) TestPackage(ctx context.Context, in *PackageRequest, opts ...grpc.CallOption) (*OperationResponse, error) {
 	out := new(OperationResponse)
 	err := c.cc.Invoke(ctx, "/services.PackagebirdServices/TestPackage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *packagebirdServicesClient) GetPackages(ctx context.Context, in *Blank, opts ...grpc.CallOption) (*PackageList, error) {
+	out := new(PackageList)
+	err := c.cc.Invoke(ctx, "/services.PackagebirdServices/GetPackages", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *packagebirdServicesClient) GetProjects(ctx context.Context, in *Blank, opts ...grpc.CallOption) (*ProjectList, error) {
+	out := new(ProjectList)
+	err := c.cc.Invoke(ctx, "/services.PackagebirdServices/GetProjects", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -177,6 +198,9 @@ type PackagebirdServicesServer interface {
 	// Package Operations
 	BuildPackage(context.Context, *PackageRequest) (*OperationResponse, error)
 	TestPackage(context.Context, *PackageRequest) (*OperationResponse, error)
+	// Get Operations
+	GetPackages(context.Context, *Blank) (*PackageList, error)
+	GetProjects(context.Context, *Blank) (*ProjectList, error)
 	// File Transfer Operations
 	DownloadFile(*DownloadRequest, PackagebirdServices_DownloadFileServer) error
 	UploadFile(PackagebirdServices_UploadFileServer) error
@@ -204,6 +228,12 @@ func (UnimplementedPackagebirdServicesServer) BuildPackage(context.Context, *Pac
 }
 func (UnimplementedPackagebirdServicesServer) TestPackage(context.Context, *PackageRequest) (*OperationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TestPackage not implemented")
+}
+func (UnimplementedPackagebirdServicesServer) GetPackages(context.Context, *Blank) (*PackageList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPackages not implemented")
+}
+func (UnimplementedPackagebirdServicesServer) GetProjects(context.Context, *Blank) (*ProjectList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetProjects not implemented")
 }
 func (UnimplementedPackagebirdServicesServer) DownloadFile(*DownloadRequest, PackagebirdServices_DownloadFileServer) error {
 	return status.Errorf(codes.Unimplemented, "method DownloadFile not implemented")
@@ -332,6 +362,42 @@ func _PackagebirdServices_TestPackage_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PackagebirdServices_GetPackages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Blank)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PackagebirdServicesServer).GetPackages(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/services.PackagebirdServices/GetPackages",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PackagebirdServicesServer).GetPackages(ctx, req.(*Blank))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PackagebirdServices_GetProjects_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Blank)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PackagebirdServicesServer).GetProjects(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/services.PackagebirdServices/GetProjects",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PackagebirdServicesServer).GetProjects(ctx, req.(*Blank))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _PackagebirdServices_DownloadFile_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(DownloadRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -409,6 +475,14 @@ var PackagebirdServices_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "TestPackage",
 			Handler:    _PackagebirdServices_TestPackage_Handler,
+		},
+		{
+			MethodName: "GetPackages",
+			Handler:    _PackagebirdServices_GetPackages_Handler,
+		},
+		{
+			MethodName: "GetProjects",
+			Handler:    _PackagebirdServices_GetProjects_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

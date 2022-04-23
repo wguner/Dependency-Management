@@ -213,3 +213,17 @@ func (server *Services) DownloadFile(request *DownloadRequest, data PackagebirdS
 
 	return nil
 }
+
+func (server *Services) GetProjects(context context.Context, blank *Blank) (*ProjectList, error) {
+	projects, err := accessors.GetProjects(*global.GlobalMongoClient)
+	if err != nil {
+		return nil, err
+	}
+
+	var names []*ProjectName
+	for _, ele := range projects {
+		names = append(names, &ProjectName{Name: ele.Name})
+	}
+
+	return &ProjectList{Names: names}, nil
+}

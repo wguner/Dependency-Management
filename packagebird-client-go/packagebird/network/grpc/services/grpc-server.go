@@ -1,3 +1,3 @@
-package NetworkInterface
+package services
 
 type GRPCServer struct{}

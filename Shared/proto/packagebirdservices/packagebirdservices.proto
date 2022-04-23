@@ -17,12 +17,33 @@ service PackagebirdServices {
   rpc BuildPackage(PackageRequest) returns (OperationResponse) {};
   rpc TestPackage(PackageRequest) returns (OperationResponse) {};
 
+  // Get Operations
+  rpc GetPackages(Blank) returns (PackageList);
+  rpc GetProjects(Blank) returns (ProjectList);
+
   // File Transfer Operations
   rpc DownloadFile(DownloadRequest) returns (stream File) {};
   rpc UploadFile(stream File) returns (OperationResponse) {};
+}
 
-  // Member Operations
-  // 
+message Blank {
+
+}
+
+message PackageList {
+  repeated PackageName names = 1;
+}
+
+message ProjectList {
+  repeated ProjectName names = 1;
+}
+
+message ProjectName {
+  string name = 1;
+}
+
+message PackageName {
+  string name = 1;
 }
 
 message ProjectRequest {
