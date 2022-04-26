@@ -47,8 +47,17 @@ func CreateProjectSourceDirectory(name string) error {
 	return nil
 }
 
+func CreatePackageSourceDirectory(name string, version int64) error {
+	path := fmt.Sprintf("packages/%v/version/%v", name, version)
+	err := CreateSubdirectory(filepath.FromSlash(path))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func CreatePackageSourceFromBytes(name string, version int64, data []byte) error {
-	path := fmt.Sprintf("packages/%v/%d/src", name, version)
+	path := fmt.Sprintf("packages/%v/version/%d/src", name, version)
 	filepath.FromSlash(name)
 	file, err := os.Create(path)
 	if err != nil {

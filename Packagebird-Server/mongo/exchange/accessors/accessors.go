@@ -238,11 +238,12 @@ func GetPackagesByName(client mongo.Client, name string) ([]structures.Package, 
 }
 
 func GetPackages(client mongo.Client) ([]structures.Package, error) {
-	documents, err := GetObjectsFromCollectionName(client, collections.Packages.String(), structures.Package{})
+	var results []structures.Package
+	_, err := GetObjectsFromCollectionName(client, collections.Packages.String(), &results)
 	if err != nil {
 		return nil, err
 	}
-	return documents.([]structures.Package), nil
+	return results, nil
 }
 
 // --- Package Set ---

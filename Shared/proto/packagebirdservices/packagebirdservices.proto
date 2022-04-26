@@ -7,7 +7,7 @@ package services;
 service PackagebirdServices {
   // Create Operations
   rpc CreateProject(ProjectRequest) returns (OperationResponse) {};
-  rpc CreatePackage(ProjectRequest) returns (OperationResponse) {};
+  rpc CreatePackage(PackageRequest) returns (OperationResponse) {};
 
   // Dependency Operations
   rpc AddPackage(PackageRequest) returns (OperationResponse) {};

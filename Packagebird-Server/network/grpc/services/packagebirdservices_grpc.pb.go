@@ -24,7 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type PackagebirdServicesClient interface {
 	// Create Operations
 	CreateProject(ctx context.Context, in *ProjectRequest, opts ...grpc.CallOption) (*OperationResponse, error)
-	CreatePackage(ctx context.Context, in *ProjectRequest, opts ...grpc.CallOption) (*OperationResponse, error)
+	CreatePackage(ctx context.Context, in *PackageRequest, opts ...grpc.CallOption) (*OperationResponse, error)
 	// Dependency Operations
 	AddPackage(ctx context.Context, in *PackageRequest, opts ...grpc.CallOption) (*OperationResponse, error)
 	RemovePackage(ctx context.Context, in *PackageRequest, opts ...grpc.CallOption) (*OperationResponse, error)
@@ -56,7 +56,7 @@ func (c *packagebirdServicesClient) CreateProject(ctx context.Context, in *Proje
 	return out, nil
 }
 
-func (c *packagebirdServicesClient) CreatePackage(ctx context.Context, in *ProjectRequest, opts ...grpc.CallOption) (*OperationResponse, error) {
+func (c *packagebirdServicesClient) CreatePackage(ctx context.Context, in *PackageRequest, opts ...grpc.CallOption) (*OperationResponse, error) {
 	out := new(OperationResponse)
 	err := c.cc.Invoke(ctx, "/services.PackagebirdServices/CreatePackage", in, out, opts...)
 	if err != nil {
@@ -191,7 +191,7 @@ func (x *packagebirdServicesUploadFileClient) CloseAndRecv() (*OperationResponse
 type PackagebirdServicesServer interface {
 	// Create Operations
 	CreateProject(context.Context, *ProjectRequest) (*OperationResponse, error)
-	CreatePackage(context.Context, *ProjectRequest) (*OperationResponse, error)
+	CreatePackage(context.Context, *PackageRequest) (*OperationResponse, error)
 	// Dependency Operations
 	AddPackage(context.Context, *PackageRequest) (*OperationResponse, error)
 	RemovePackage(context.Context, *PackageRequest) (*OperationResponse, error)
@@ -214,7 +214,7 @@ type UnimplementedPackagebirdServicesServer struct {
 func (UnimplementedPackagebirdServicesServer) CreateProject(context.Context, *ProjectRequest) (*OperationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateProject not implemented")
 }
-func (UnimplementedPackagebirdServicesServer) CreatePackage(context.Context, *ProjectRequest) (*OperationResponse, error) {
+func (UnimplementedPackagebirdServicesServer) CreatePackage(context.Context, *PackageRequest) (*OperationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreatePackage not implemented")
 }
 func (UnimplementedPackagebirdServicesServer) AddPackage(context.Context, *PackageRequest) (*OperationResponse, error) {
@@ -250,7 +250,7 @@ type UnsafePackagebirdServicesServer interface {
 	mustEmbedUnimplementedPackagebirdServicesServer()
 }
 
-func RegisterPackagebirdServicesServer(s grpc.ServiceRegistrar, srv PackagebirdServicesServer) {
+func RegisterPackagebirdServicesServer(s grpc.ServiceRegistrar, srv *Services) {
 	s.RegisterService(&PackagebirdServices_ServiceDesc, srv)
 }
 
@@ -273,7 +273,7 @@ func _PackagebirdServices_CreateProject_Handler(srv interface{}, ctx context.Con
 }
 
 func _PackagebirdServices_CreatePackage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ProjectRequest)
+	in := new(PackageRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -285,7 +285,7 @@ func _PackagebirdServices_CreatePackage_Handler(srv interface{}, ctx context.Con
 		FullMethod: "/services.PackagebirdServices/CreatePackage",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PackagebirdServicesServer).CreatePackage(ctx, req.(*ProjectRequest))
+		return srv.(PackagebirdServicesServer).CreatePackage(ctx, req.(*PackageRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

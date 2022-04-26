@@ -227,3 +227,80 @@ func (server *Services) GetProjects(context context.Context, blank *Blank) (*Pro
 
 	return &ProjectList{Names: names}, nil
 }
+
+func (server *Services) CreatePackage(context context.Context, request *PackageRequest) (*OperationResponse, error) {
+	var response = &OperationResponse{
+		Success: false,
+		Header:  "FAILED TO CREATE PACKAGE",
+	}
+
+	project, err := accessors.GetProjectByName(*global.GlobalMongoClient, request.GetName())
+	if err != nil && err != mongo.ErrNoDocuments {
+		response.Header = "FAILED TO RETRIEVE PROJECT"
+		response.Message = fmt.Sprintf("Failed to retrieve project by name '%v'", request.GetName())
+		return response, err
+	}
+
+	// TODO: authentication, err := accessors.GetAuthenticationByUserObjectId()
+	// TODO: authentication later
+
+	workingDirectory, err := paths.Getwd()
+
+	var source = &structures.Source{
+		Path:           fmt.Sprintf(filepath.ToSlash(fmt.Sprintf("%v/packages/%v/version/%v/src", workingDirectory.String(), request.GetName(), request.GetVersion()))),
+		LastAccessedBy: time.Now(),
+		PackageName:    request.GetName(),
+		ObjectId:       primitive.NewObjectID(),
+	}
+	var graph = &structures.Graph{
+		ObjectId: primitive.NewObjectID(),
+		Name:     project.Name,
+		Version:  project.PackageVersion,
+		Package:  primitive.NewObjectID(),
+		Children: project.Dependencies,
+	}
+	var pkg = &structures.Package{
+		Name:    request.GetName(),
+		Version: project.PackageVersion,
+		Source:  source.ObjectId,
+		Graph:   graph.ObjectId,
+		Scripts: []primitive.ObjectID{},
+	}
+
+	err = accessors.CreateSource(*global.GlobalMongoClient, *source)
+	if err != nil {
+		return response, err
+	}
+
+	err = accessors.CreateGraph(*global.GlobalMongoClient, *graph)
+	if err != nil {
+		return response, err
+	}
+
+	err = accessors.CreatePackage(*global.GlobalMongoClient, *pkg)
+	if err != nil {
+		return response, err
+	}
+
+	err = filesystem.CreatePackageSourceDirectory(pkg.Name, pkg.Version)
+	if err != nil {
+		return response, err
+	}
+
+	response.Success = true
+	response.Header = "SUCCESSFULLY CREATED PACKAGE TEMPLATE"
+	response.Message = source.Path
+	return response, nil
+}
+
+func (server *Services) GetPackages(ctx context.Context, blank *Blank) (*PackageList, error) {
+	pkgs, err := accessors.GetPackages(*global.GlobalMongoClient)
+	if err != nil {
+		return nil, err
+	}
+	var names []*PackageName
+	for _, ele := range pkgs {
+		names = append(names, &PackageName{Name: ele.Name})
+	}
+	return &PackageList{Names: names}, nil
+}
