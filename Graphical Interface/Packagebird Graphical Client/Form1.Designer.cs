@@ -141,6 +141,7 @@
             this.projectPackagesList.Name = "projectPackagesList";
             this.projectPackagesList.Size = new System.Drawing.Size(152, 259);
             this.projectPackagesList.TabIndex = 9;
+            this.projectPackagesList.SelectedIndexChanged += new System.EventHandler(this.projectPackagesList_SelectedIndexChanged);
             // 
             // button4
             // 

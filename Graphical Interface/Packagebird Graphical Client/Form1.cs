@@ -55,6 +55,34 @@ namespace Packagebird_Graphical_Client
                     break;
             }
             loadProjects.WaitForExit();
+
+            var loadPackages = GenerateCommand($"get packages");
+            line = "";
+
+            loadPackages.Start();
+            while (true)
+            {
+                char i = (char)loadPackages.StandardOutput!.Read();
+                if (i.Equals('\n'))
+                {
+                    this.registryPackagesList.Items.Add(line);
+                    line = "";
+                }
+                else
+                {
+                    line += i;
+                }
+                if (loadPackages.StandardOutput?.EndOfStream == true)
+                    break;
+            }
+            loadPackages.WaitForExit();
+
+            var outMsg = loadPackages.StandardOutput.ReadToEnd();
+            var errMsg = loadPackages.StandardError.ReadToEnd();
+
+            this.commandLineOutputTextbox.Text = $"StdOut: {outMsg}\nStdErr: {errMsg}";
+
+            // Add loading project packages tomorrow
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -69,7 +97,33 @@ namespace Packagebird_Graphical_Client
 
         private void button6_Click(object sender, EventArgs e)
         {
+            var project = registryProjectsList.SelectedItem.ToString();
+            var process = GenerateCommand($"create package {project} 0");
+            process.Start();
+            registryPackagesList.Items.Clear();
+            process = GenerateCommand("get packages");
+            process.Start();
+            string line = "";
+            while (true)
+            {
+                char i = (char)process.StandardOutput!.Read();
+                if (i.Equals('\n'))
+                {
+                    this.registryPackagesList.Items.Add(line);
+                    line = "";
+                }
+                else
+                {
+                    line += i;
+                }
+                if (process.StandardOutput?.EndOfStream == true)
+                    break;
+            }
+            process.WaitForExit();
+            var outMsg = process.StandardOutput.ReadToEnd();
+            var errMsg = process.StandardError.ReadToEnd();
 
+            this.commandLineOutputTextbox.Text = $"StdOut: {outMsg}\nStdErr: {errMsg}";
         }
 
         private void label5_Click(object sender, EventArgs e)
@@ -100,6 +154,11 @@ namespace Packagebird_Graphical_Client
         }
 
         private void label7_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void projectPackagesList_SelectedIndexChanged(object sender, EventArgs e)
         {
 
         }
