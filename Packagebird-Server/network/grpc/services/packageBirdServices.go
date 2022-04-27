@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/arduino/go-paths-helper"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"io"
@@ -13,6 +14,7 @@ import (
 	"packagebird-server/mongo/exchange/accessors"
 	"packagebird-server/mongo/structures"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -115,13 +117,17 @@ func (server *Services) UploadFile(data PackagebirdServices_UploadFileServer) er
 		return err
 	}
 	path := chunk.GetPath()
+	split := strings.Split(path, "/")
+	name := split[len(split)-4]
 
 	// Query for source path
-	project, err := accessors.GetProjectByName(*global.GlobalMongoClient, path)
+	project, err := accessors.GetProjectByName(*global.GlobalMongoClient, name)
 	if err != nil {
 		return err
 	}
-	source, err := accessors.GetSourceByObjectId(*global.GlobalMongoClient, project.Source)
+	pkgVersion := project.PackageVersion - 1
+	pkg, err := accessors.GetPackageByNameAndVersion(*global.GlobalMongoClient, name, pkgVersion)
+	source, err := accessors.GetSourceByObjectId(*global.GlobalMongoClient, pkg.Source)
 	if err != nil {
 		return err
 	}
@@ -247,7 +253,7 @@ func (server *Services) CreatePackage(context context.Context, request *PackageR
 	workingDirectory, err := paths.Getwd()
 
 	var source = &structures.Source{
-		Path:           fmt.Sprintf(filepath.ToSlash(fmt.Sprintf("%v/packages/%v/version/%v/src", workingDirectory.String(), request.GetName(), request.GetVersion()))),
+		Path:           fmt.Sprintf(filepath.ToSlash(fmt.Sprintf("%v/packages/%v/version/%v/src", workingDirectory.String(), request.GetName(), project.PackageVersion))),
 		LastAccessedBy: time.Now(),
 		PackageName:    request.GetName(),
 		ObjectId:       primitive.NewObjectID(),
@@ -260,11 +266,12 @@ func (server *Services) CreatePackage(context context.Context, request *PackageR
 		Children: project.Dependencies,
 	}
 	var pkg = &structures.Package{
-		Name:    request.GetName(),
-		Version: project.PackageVersion,
-		Source:  source.ObjectId,
-		Graph:   graph.ObjectId,
-		Scripts: []primitive.ObjectID{},
+		Name:     request.GetName(),
+		Version:  project.PackageVersion,
+		Source:   source.ObjectId,
+		Graph:    graph.ObjectId,
+		Scripts:  []primitive.ObjectID{},
+		ObjectId: graph.Package,
 	}
 
 	err = accessors.CreateSource(*global.GlobalMongoClient, *source)
@@ -287,9 +294,22 @@ func (server *Services) CreatePackage(context context.Context, request *PackageR
 		return response, err
 	}
 
+	// Update package version attached to project
+	var update = &bson.D{
+		{"$set", &bson.D{
+			{"packageVersion", project.PackageVersion + 1},
+		}},
+	}
+	err = accessors.SetProjectByObjectId(*global.GlobalMongoClient, project.ObjectId, update)
+
 	response.Success = true
 	response.Header = "SUCCESSFULLY CREATED PACKAGE TEMPLATE"
 	response.Message = source.Path
+	response = &OperationResponse{
+		Success: true,
+		Header:  "SUCCESSFULLY CREATED PACKAGE TEMPLATE",
+		Message: source.Path,
+	}
 	return response, nil
 }
 

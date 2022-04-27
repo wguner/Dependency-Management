@@ -84,7 +84,7 @@ func createPackage(name string, version int64) error {
 	}
 
 	// Send Path
-	path := pkg.Message
+	path := pkg.GetMessage()
 	file := &services.File{
 		Content: &services.File_Path{
 			Path: path,

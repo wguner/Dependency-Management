@@ -28,7 +28,9 @@ func CreateSubdirectories(paths []string) error {
 
 func CreateSubdirectory(path string) error {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		os.Mkdir(path, 0755)
+		if err := os.MkdirAll(path, 0755); err != nil {
+			return err
+		}
 		return nil
 	} else if err == nil {
 		return nil
@@ -36,6 +38,13 @@ func CreateSubdirectory(path string) error {
 		log.Print(err)
 		return err
 	}
+}
+
+func CreateFile(path string) (*os.File, error) {
+	if err := CreateSubdirectory(filepath.Dir(path)); err != nil {
+		return nil, err
+	}
+	return os.Create(path)
 }
 
 func CreateProjectSourceDirectory(name string) error {
@@ -48,8 +57,9 @@ func CreateProjectSourceDirectory(name string) error {
 }
 
 func CreatePackageSourceDirectory(name string, version int64) error {
-	path := fmt.Sprintf("packages/%v/version/%v", name, version)
-	err := CreateSubdirectory(filepath.FromSlash(path))
+	path := fmt.Sprintf("packages/%v/version/%v/src", name, version)
+	file, err := CreateFile(filepath.FromSlash(path))
+	file.Close()
 	if err != nil {
 		return err
 	}

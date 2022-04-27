@@ -435,9 +435,7 @@ func GetProjectByObjectId(client mongo.Client, objectId primitive.ObjectID) (*st
 }
 
 func GetProjectByName(client mongo.Client, name string) (*structures.Project, error) {
-	var filter = &bson.M{
-		"name": name,
-	}
+	var filter = &bson.D{{"name", name}}
 	obj, err := GetObjectFromCollectionNameAndFilter(client, collections.Projects.String(), &structures.Project{}, filter)
 	if err != nil {
 		return nil, err
@@ -456,8 +454,8 @@ func GetProjects(client mongo.Client) ([]structures.Project, error) {
 
 // --- Project Set ---
 
-func SetProjectByObjectId(client mongo.Client, objectId primitive.ObjectID) error {
-	err := SetObjectInCollectionNameByObjectId(client, collections.Projects.String(), objectId, structures.Project{})
+func SetProjectByObjectId(client mongo.Client, objectId primitive.ObjectID, update interface{}) error {
+	err := SetObjectInCollectionNameByObjectId(client, collections.Projects.String(), objectId, update)
 	if err != nil {
 		return err
 	}
