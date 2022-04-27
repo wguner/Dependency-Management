@@ -4,7 +4,7 @@
 // - protoc             v3.20.0
 // source: packagebirdservices.proto
 
-package services
+package __services
 
 import (
 	context "context"
@@ -26,7 +26,7 @@ type PackagebirdServicesClient interface {
 	CreateProject(ctx context.Context, in *ProjectRequest, opts ...grpc.CallOption) (*OperationResponse, error)
 	CreatePackage(ctx context.Context, in *PackageRequest, opts ...grpc.CallOption) (*OperationResponse, error)
 	// Dependency Operations
-	AddPackage(ctx context.Context, in *PackageRequest, opts ...grpc.CallOption) (*OperationResponse, error)
+	AddPackage(ctx context.Context, in *AddPackageRequest, opts ...grpc.CallOption) (*AddPackageResponse, error)
 	RemovePackage(ctx context.Context, in *PackageRequest, opts ...grpc.CallOption) (*OperationResponse, error)
 	// Package Operations
 	BuildPackage(ctx context.Context, in *PackageRequest, opts ...grpc.CallOption) (*OperationResponse, error)
@@ -34,6 +34,9 @@ type PackagebirdServicesClient interface {
 	// Get Operations
 	GetPackages(ctx context.Context, in *Blank, opts ...grpc.CallOption) (*PackageList, error)
 	GetProjects(ctx context.Context, in *Blank, opts ...grpc.CallOption) (*ProjectList, error)
+	GetPackageMetadata(ctx context.Context, in *PackageRequest, opts ...grpc.CallOption) (*PackageMetadata, error)
+	// Update Operations
+	UpdatePackageMetadata(ctx context.Context, in *PackageRequest, opts ...grpc.CallOption) (*OperationResponse, error)
 	// File Transfer Operations
 	DownloadFile(ctx context.Context, in *DownloadRequest, opts ...grpc.CallOption) (PackagebirdServices_DownloadFileClient, error)
 	UploadFile(ctx context.Context, opts ...grpc.CallOption) (PackagebirdServices_UploadFileClient, error)
@@ -65,8 +68,8 @@ func (c *packagebirdServicesClient) CreatePackage(ctx context.Context, in *Packa
 	return out, nil
 }
 
-func (c *packagebirdServicesClient) AddPackage(ctx context.Context, in *PackageRequest, opts ...grpc.CallOption) (*OperationResponse, error) {
-	out := new(OperationResponse)
+func (c *packagebirdServicesClient) AddPackage(ctx context.Context, in *AddPackageRequest, opts ...grpc.CallOption) (*AddPackageResponse, error) {
+	out := new(AddPackageResponse)
 	err := c.cc.Invoke(ctx, "/services.PackagebirdServices/AddPackage", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -113,6 +116,24 @@ func (c *packagebirdServicesClient) GetPackages(ctx context.Context, in *Blank, 
 func (c *packagebirdServicesClient) GetProjects(ctx context.Context, in *Blank, opts ...grpc.CallOption) (*ProjectList, error) {
 	out := new(ProjectList)
 	err := c.cc.Invoke(ctx, "/services.PackagebirdServices/GetProjects", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *packagebirdServicesClient) GetPackageMetadata(ctx context.Context, in *PackageRequest, opts ...grpc.CallOption) (*PackageMetadata, error) {
+	out := new(PackageMetadata)
+	err := c.cc.Invoke(ctx, "/services.PackagebirdServices/GetPackageMetadata", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *packagebirdServicesClient) UpdatePackageMetadata(ctx context.Context, in *PackageRequest, opts ...grpc.CallOption) (*OperationResponse, error) {
+	out := new(OperationResponse)
+	err := c.cc.Invoke(ctx, "/services.PackagebirdServices/UpdatePackageMetadata", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +214,7 @@ type PackagebirdServicesServer interface {
 	CreateProject(context.Context, *ProjectRequest) (*OperationResponse, error)
 	CreatePackage(context.Context, *PackageRequest) (*OperationResponse, error)
 	// Dependency Operations
-	AddPackage(context.Context, *PackageRequest) (*OperationResponse, error)
+	AddPackage(context.Context, *AddPackageRequest) (*AddPackageResponse, error)
 	RemovePackage(context.Context, *PackageRequest) (*OperationResponse, error)
 	// Package Operations
 	BuildPackage(context.Context, *PackageRequest) (*OperationResponse, error)
@@ -201,6 +222,9 @@ type PackagebirdServicesServer interface {
 	// Get Operations
 	GetPackages(context.Context, *Blank) (*PackageList, error)
 	GetProjects(context.Context, *Blank) (*ProjectList, error)
+	GetPackageMetadata(context.Context, *PackageRequest) (*PackageMetadata, error)
+	// Update Operations
+	UpdatePackageMetadata(context.Context, *PackageRequest) (*OperationResponse, error)
 	// File Transfer Operations
 	DownloadFile(*DownloadRequest, PackagebirdServices_DownloadFileServer) error
 	UploadFile(PackagebirdServices_UploadFileServer) error
@@ -217,7 +241,7 @@ func (UnimplementedPackagebirdServicesServer) CreateProject(context.Context, *Pr
 func (UnimplementedPackagebirdServicesServer) CreatePackage(context.Context, *PackageRequest) (*OperationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreatePackage not implemented")
 }
-func (UnimplementedPackagebirdServicesServer) AddPackage(context.Context, *PackageRequest) (*OperationResponse, error) {
+func (UnimplementedPackagebirdServicesServer) AddPackage(context.Context, *AddPackageRequest) (*AddPackageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddPackage not implemented")
 }
 func (UnimplementedPackagebirdServicesServer) RemovePackage(context.Context, *PackageRequest) (*OperationResponse, error) {
@@ -234,6 +258,12 @@ func (UnimplementedPackagebirdServicesServer) GetPackages(context.Context, *Blan
 }
 func (UnimplementedPackagebirdServicesServer) GetProjects(context.Context, *Blank) (*ProjectList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProjects not implemented")
+}
+func (UnimplementedPackagebirdServicesServer) GetPackageMetadata(context.Context, *PackageRequest) (*PackageMetadata, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPackageMetadata not implemented")
+}
+func (UnimplementedPackagebirdServicesServer) UpdatePackageMetadata(context.Context, *PackageRequest) (*OperationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdatePackageMetadata not implemented")
 }
 func (UnimplementedPackagebirdServicesServer) DownloadFile(*DownloadRequest, PackagebirdServices_DownloadFileServer) error {
 	return status.Errorf(codes.Unimplemented, "method DownloadFile not implemented")
@@ -291,7 +321,7 @@ func _PackagebirdServices_CreatePackage_Handler(srv interface{}, ctx context.Con
 }
 
 func _PackagebirdServices_AddPackage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PackageRequest)
+	in := new(AddPackageRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -303,7 +333,7 @@ func _PackagebirdServices_AddPackage_Handler(srv interface{}, ctx context.Contex
 		FullMethod: "/services.PackagebirdServices/AddPackage",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PackagebirdServicesServer).AddPackage(ctx, req.(*PackageRequest))
+		return srv.(PackagebirdServicesServer).AddPackage(ctx, req.(*AddPackageRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -398,6 +428,42 @@ func _PackagebirdServices_GetProjects_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PackagebirdServices_GetPackageMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PackageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PackagebirdServicesServer).GetPackageMetadata(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/services.PackagebirdServices/GetPackageMetadata",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PackagebirdServicesServer).GetPackageMetadata(ctx, req.(*PackageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PackagebirdServices_UpdatePackageMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PackageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PackagebirdServicesServer).UpdatePackageMetadata(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/services.PackagebirdServices/UpdatePackageMetadata",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PackagebirdServicesServer).UpdatePackageMetadata(ctx, req.(*PackageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _PackagebirdServices_DownloadFile_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(DownloadRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -483,6 +549,14 @@ var PackagebirdServices_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetProjects",
 			Handler:    _PackagebirdServices_GetProjects_Handler,
+		},
+		{
+			MethodName: "GetPackageMetadata",
+			Handler:    _PackagebirdServices_GetPackageMetadata_Handler,
+		},
+		{
+			MethodName: "UpdatePackageMetadata",
+			Handler:    _PackagebirdServices_UpdatePackageMetadata_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

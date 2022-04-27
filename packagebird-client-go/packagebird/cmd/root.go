@@ -5,7 +5,11 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"fmt"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"os"
+	"packagebird/network/grpc/services"
 
 	"github.com/spf13/cobra"
 )
@@ -25,7 +29,12 @@ if you're ready to create a package from the current iteration of a project.`,
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	err := rootCmd.Execute()
+	_, err := GetServerClient()
+	if err != nil {
+		fmt.Print(err)
+	}
+
+	err = rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
 	}
@@ -42,3 +51,15 @@ func init() {
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
+
+func GetServerClient() (services.PackagebirdServicesClient, error) {
+	connection, err := grpc.Dial("127.0.0.1:55051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	defer connection.Close()
+	if err != nil {
+		return nil, err
+	}
+	client := services.NewPackagebirdServicesClient(connection)
+	return client, nil
+}
+
+var Client services.PackagebirdServicesClient

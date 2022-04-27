@@ -12,6 +12,7 @@ import (
 	"packagebird-server/filesystem"
 	"packagebird-server/global"
 	"packagebird-server/mongo/exchange/accessors"
+	"packagebird-server/mongo/exchange/queries"
 	"packagebird-server/mongo/structures"
 	"path/filepath"
 	"strings"
@@ -220,6 +221,42 @@ func (server *Services) DownloadFile(request *DownloadRequest, data PackagebirdS
 	return nil
 }
 
+func (server *Services) DownloadData(request *DownloadRequest, data PackagebirdServices_DownloadDataServer) error {
+	// Get file path
+	path := request.GetPath()
+
+	// Open file at path
+	file, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Write file to download buffer
+	buffer := make([]byte, 64*1024)
+	for {
+		bytes, err := file.Read(buffer)
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return err
+		}
+
+		chunk := &File{
+			Content: &File_Chunk{
+				Chunk: buffer[:bytes],
+			},
+		}
+
+		err = data.Send(chunk)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (server *Services) GetProjects(context context.Context, blank *Blank) (*ProjectList, error) {
 	projects, err := accessors.GetProjects(*global.GlobalMongoClient)
 	if err != nil {
@@ -273,6 +310,11 @@ func (server *Services) CreatePackage(context context.Context, request *PackageR
 		Scripts:  []primitive.ObjectID{},
 		ObjectId: graph.Package,
 	}
+	var pkgMetadata = &structures.PackageMetadata{
+		ObjectId:        primitive.NewObjectID(),
+		Package:         pkg.ObjectId,
+		NumberDownloads: 0,
+	}
 
 	err = accessors.CreateSource(*global.GlobalMongoClient, *source)
 	if err != nil {
@@ -301,6 +343,14 @@ func (server *Services) CreatePackage(context context.Context, request *PackageR
 		}},
 	}
 	err = accessors.SetProjectByObjectId(*global.GlobalMongoClient, project.ObjectId, update)
+	if err != nil {
+		return response, err
+	}
+
+	err = accessors.CreatePackageMetadata(*global.GlobalMongoClient, *pkgMetadata)
+	if err != nil {
+		return response, err
+	}
 
 	response.Success = true
 	response.Header = "SUCCESSFULLY CREATED PACKAGE TEMPLATE"
@@ -318,9 +368,115 @@ func (server *Services) GetPackages(ctx context.Context, blank *Blank) (*Package
 	if err != nil {
 		return nil, err
 	}
-	var names []*PackageName
+	var packages []*PackageInfo
 	for _, ele := range pkgs {
-		names = append(names, &PackageName{Name: ele.Name})
+		packages = append(packages, &PackageInfo{
+			Name:    ele.Name,
+			Version: ele.Version,
+		})
 	}
-	return &PackageList{Names: names}, nil
+	return &PackageList{Packages: packages}, nil
+}
+
+func (server *Services) UpdatePackageMetadata(ctx context.Context, request *PackageRequest) (*OperationResponse, error) {
+	meta, err := accessors.GetPackageMetadataByNameAndVersion(*global.GlobalMongoClient, request.GetName(), request.GetVersion())
+	if err != nil {
+		return nil, err
+	}
+
+	meta.LastDownloaded = time.Now()
+	meta.NumberDownloads = meta.NumberDownloads + 1
+
+	var update = &bson.D{
+		{"$set", &bson.D{
+			{"numberDownloads", meta.NumberDownloads},
+			{"lastDownloaded", meta.LastDownloaded},
+		}},
+	}
+	accessors.SetPackageMetadataByObjectId(*global.GlobalMongoClient, meta.ObjectId, update)
+	response := &OperationResponse{
+		Success: true,
+		Header:  "SUCCESSFULLY MODIFIED PACKAGE METADATA",
+		Message: fmt.Sprintf("Successfully updated package metadata attacked with package %v-v%d", request.GetName(), request.GetVersion()),
+	}
+	return response, nil
+}
+
+func (server *Services) AddPackage(ctx context.Context, request *AddPackageRequest) (*AddPackageResponse, error) {
+	deps, err := queries.GetAllPackageDependenciesByNameAndVersion(*global.GlobalMongoClient, request.GetPackageName(), request.GetPackageVersion())
+	if err != nil {
+		return nil, err
+	}
+
+	proj, err := accessors.GetProjectByName(*global.GlobalMongoClient, request.GetProjectName())
+	if err != nil {
+		return nil, err
+	}
+
+	for _, ele := range deps {
+		proj.Dependencies = append(proj.Dependencies, ele.ObjectId)
+	}
+
+	proj.Dependencies = queries.RemoveDuplicates(proj.Dependencies)
+
+	var update = &bson.D{
+		{"$set", &bson.D{
+			{"dependencies", proj.Dependencies},
+		}},
+	}
+
+	err = accessors.SetProjectByObjectId(*global.GlobalMongoClient, proj.ObjectId, update)
+	if err != nil {
+		return nil, err
+	}
+
+	paths, err := queries.GetAllPackageDependencySourcePathsByNameAndVersion(*global.GlobalMongoClient, request.GetPackageName(), request.GetPackageVersion())
+	if err != nil {
+		return nil, err
+	}
+
+	var message strings.Builder
+	for _, ele := range paths {
+		message.WriteString(ele + "\n")
+	}
+
+	var response = &AddPackageResponse{
+		Paths: paths,
+	}
+	return response, nil
+}
+
+func (server *Services) RemovePackage(ctx context.Context, request *AddPackageRequest) (*OperationResponse, error) {
+	// Find project
+	name := request.GetProjectName()
+	proj, err := accessors.GetProjectByName(*global.GlobalMongoClient, name)
+	if err != nil {
+		return nil, err
+	}
+	// Find package
+	pkg, err := accessors.GetPackageByNameAndVersion(*global.GlobalMongoClient, request.GetPackageName(), request.GetPackageVersion())
+	if err != nil {
+		return nil, err
+	}
+	var id = pkg.ObjectId
+
+	// Remove reference to package
+	for i, ele := range proj.Dependencies {
+		if ele == id {
+			proj.Dependencies[i] = proj.Dependencies[len(proj.Dependencies)-1]
+			proj.Dependencies = proj.Dependencies[:len(proj.Dependencies)-1]
+		}
+	}
+
+	// Update project
+	var update = &bson.D{
+		{"$set", &bson.D{
+			{"dependencies", proj.Dependencies},
+		}},
+	}
+	if err := accessors.SetProjectByObjectId(*global.GlobalMongoClient, proj.ObjectId, update); err != nil {
+		return nil, err
+	}
+
+	return &OperationResponse{Success: true, Header: "SUCCESSFULLY REMOVED PACKAGE FROM PROJECT"}, nil
 }

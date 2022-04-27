@@ -1,6 +1,5 @@
 syntax = "proto3";
-
-option go_package = "grpc/services";
+option go_package = ".";
 
 package services;
 
@@ -10,7 +9,7 @@ service PackagebirdServices {
   rpc CreatePackage(PackageRequest) returns (OperationResponse) {};
 
   // Dependency Operations
-  rpc AddPackage(PackageRequest) returns (OperationResponse) {};
+  rpc AddPackage(AddPackageRequest) returns (AddPackageResponse) {};
   rpc RemovePackage(PackageRequest) returns (OperationResponse) {};
 
   // Package Operations
@@ -18,20 +17,49 @@ service PackagebirdServices {
   rpc TestPackage(PackageRequest) returns (OperationResponse) {};
 
   // Get Operations
-  rpc GetPackages(Blank) returns (PackageList);
-  rpc GetProjects(Blank) returns (ProjectList);
+  rpc GetPackages(Blank) returns (PackageList) {};
+  rpc GetProjects(Blank) returns (ProjectList) {};
+  rpc GetPackageMetadata(PackageRequest) returns (PackageMetadata) {};
+
+  // Update Operations
+  rpc UpdatePackageMetadata(PackageRequest) returns (OperationResponse) {};
 
   // File Transfer Operations
   rpc DownloadFile(DownloadRequest) returns (stream File) {};
   rpc UploadFile(stream File) returns (OperationResponse) {};
+  rpc DownloadData(DownloadRequest) returns (stream File) {};
 }
 
 message Blank {
 
 }
 
+message PackageMetadata {
+  string packageId = 1;
+  int64 numberDownloads = 2;
+  string lastDownloaded = 3;
+  string lastDownloadedBy = 4;
+}
+
+message AddPackageRequest {
+  string projectName = 1;
+  string packageName = 2;
+  int64 packageVersion = 3;
+}
+
+message AddPackageResponse {
+  repeated string paths = 1;
+}
+
+message AddPackageResponsePackage {}
+
 message PackageList {
-  repeated PackageName names = 1;
+  repeated PackageInfo packages = 1;
+}
+
+message PackageInfo {
+  string name = 1;
+  int64 version = 2;
 }
 
 message ProjectList {

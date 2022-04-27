@@ -115,55 +115,14 @@ func install(name string) error {
 	// Create subdirectories
 	separator := fmt.Sprintf("%c", os.PathSeparator)
 	os.Mkdir(dir+separator+name, fs.ModePerm) // Project subdirectory
-	// os.Mkdir(dir+separator+name+separator+"packages", fs.ModePerm) // Packages subdirectory
-	// local := fmt.Sprintf(dir + separator + name + separator)
-
-	// Extract from temporary file
-	/*format := archiver.CompressedArchive{
-		Compression: archiver.Gz{},
-		Archival:    archiver.Tar{},
-	}*/
-	/*handler := func(context context.Context, file archiver.File) error {
-		fmt.Println(file.Name())
-		fmt.Println(local + file.Name())
-		fmt.Println(file.NameInArchive)
-
-		path, err := os.Create(file.NameInArchive)
-		if err != nil {
-			return err
-		}
-		defer path.Close()
-
-		archive, err := file.Open()
-		if err != nil {
-			return err
-		}
-		defer archive.Close()
-
-		buffer := make([]byte, 64*1024)
-		for {
-			_, err := archive.Read(buffer)
-			if err != nil && err == io.EOF {
-				break
-			}
-			if err != nil {
-				return err
-			}
-			path.Write(buffer)
-		}
-
-		return nil
-	}*/
 	_, err = tarfile.Seek(0, 0)
 	if err != nil {
 		return err
 	}
-	// err = archiver.Unarchiver
-	// err = archiver.Extractor().Extract()
-
-	//binary, _ := exec.LookPath("tar")
-	path, _ := filepath.Abs(tarfile.Name())
-	// args := []string{"tar", "-xf", path}
+	path, err := filepath.Abs(tarfile.Name())
+	if err != nil {
+		return err
+	}
 	cmd := exec.Command("tar", "-xf", path) // syscall.Exec(binary, args, os.Environ())
 	err = cmd.Run()
 	if err != nil {

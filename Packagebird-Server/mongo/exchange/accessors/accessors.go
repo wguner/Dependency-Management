@@ -275,7 +275,14 @@ func GetPackageMetadataByNameAndVersion(client mongo.Client, name string, versio
 			},
 		},
 	}
-	obj, err := GetObjectFromCollectionNameAndFilter(client, collections.PackagesMetadata.String(), structures.PackageMetadata{}, filter)
+	pkg, err := GetObjectsFromCollectionNameAndFilter(client, collections.Packages.String(), structures.Package{}, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	var o = pkg.(*structures.Package)
+
+	obj, err := GetObjectFromCollectionNameByObjectId(client, collections.PackagesMetadata.String(), o.Metadata, structures.Package{})
 	if err != nil {
 		return nil, err
 	}
@@ -292,8 +299,8 @@ func GetPackagesMetadata(client mongo.Client) ([]structures.PackageMetadata, err
 
 // --- Package Metadata Set ---
 
-func SetPackageMetadataByObjectId(client mongo.Client, objectId primitive.ObjectID) error {
-	err := SetObjectInCollectionNameByObjectId(client, collections.PackagesMetadata.String(), objectId, structures.PackageMetadata{})
+func SetPackageMetadataByObjectId(client mongo.Client, objectId primitive.ObjectID, update interface{}) error {
+	err := SetObjectInCollectionNameByObjectId(client, collections.PackagesMetadata.String(), objectId, update)
 	if err != nil {
 		return err
 	}
@@ -338,8 +345,8 @@ func GetUsers(client mongo.Client) ([]structures.User, error) {
 
 // --- User Set ---
 
-func SetUserByObjectId(client mongo.Client, objectId primitive.ObjectID) error {
-	err := SetObjectInCollectionNameByObjectId(client, collections.Users.String(), objectId, structures.User{})
+func SetUserByObjectId(client mongo.Client, objectId primitive.ObjectID, update interface{}) error {
+	err := SetObjectInCollectionNameByObjectId(client, collections.Users.String(), objectId, update)
 	if err != nil {
 		return err
 	}

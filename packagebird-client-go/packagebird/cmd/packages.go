@@ -56,8 +56,24 @@ func getPackages() error {
 		return err
 	}
 
-	for _, ele := range response.GetNames() {
-		fmt.Printf("%v", ele.GetName())
+	for _, ele := range response.GetPackages() {
+		fmt.Printf("%v-v%v\n", ele.GetName(), ele.GetVersion())
 	}
 	return nil
+}
+
+func getPackagesList() (*services.PackageList, error) {
+	connection, err := grpc.Dial("127.0.0.1:55051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return nil, err
+	}
+	defer connection.Close()
+
+	client := services.NewPackagebirdServicesClient(connection)
+	response, err := client.GetPackages(context.Background(), &services.Blank{})
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
 }

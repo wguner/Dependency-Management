@@ -22,6 +22,7 @@ type Package struct {
 	Source   primitive.ObjectID   `bson:"sourceId"`
 	Graph    primitive.ObjectID   `bson:"graphId"`
 	Scripts  []primitive.ObjectID `bson:"scripts"`
+	Metadata primitive.ObjectID   `bson:"metadata"`
 }
 
 // PackageMetadata metadata attached to a package
