@@ -46,13 +46,15 @@ func init() {
 }
 
 func removePackage(projectName string, packageName string, packageVersion int64) error {
-	client, err := GetServerClient()
+	client, connection, err := GetServerClient()
+	defer connection.Close()
 	if err != nil {
 		return err
 	}
-	r, err := client.RemovePackage(context.Background(), &services.PackageRequest{
-		Name:    packageName,
-		Version: packageVersion,
+	r, err := client.RemovePackage(context.Background(), &services.AddPackageRequest{
+		ProjectName:    projectName,
+		PackageName:    packageName,
+		PackageVersion: packageVersion,
 	})
 	if err != nil {
 		return err

@@ -98,8 +98,12 @@ var packageSchema = bson.M{
 var packageMetadataSchema = bson.M{
 	"$jsonSchema": bson.M{
 		"bsonType": "object",
-		"required": []string{"packageId", "numberDownloads", "lastDownloaded", "lastDownloadedBy"},
+		"required": []string{"_id", "packageId", "numberDownloads", "lastDownloaded", "lastDownloadedBy"},
 		"properties": bson.M{
+			"_id": bson.M{
+				"bsonType":    "objectId",
+				"description": "required object id of metadata",
+			},
 			"packageId": bson.M{
 				"bsonType":    "objectId",
 				"description": "required object id of package",

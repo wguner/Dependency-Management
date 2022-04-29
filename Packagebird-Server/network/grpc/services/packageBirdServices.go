@@ -8,6 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"io"
+	"log"
 	"os"
 	"packagebird-server/filesystem"
 	"packagebird-server/global"
@@ -119,16 +120,16 @@ func (server *Services) UploadFile(data PackagebirdServices_UploadFileServer) er
 	}
 	path := chunk.GetPath()
 	split := strings.Split(path, "/")
-	name := split[len(split)-4]
+	name := split[len(split)-1]
 
 	// Query for source path
 	project, err := accessors.GetProjectByName(*global.GlobalMongoClient, name)
 	if err != nil {
 		return err
 	}
-	pkgVersion := project.PackageVersion - 1
-	pkg, err := accessors.GetPackageByNameAndVersion(*global.GlobalMongoClient, name, pkgVersion)
-	source, err := accessors.GetSourceByObjectId(*global.GlobalMongoClient, pkg.Source)
+	// pkgVersion := project.PackageVersion - 1
+	// pkg, err := accessors.GetPackageByNameAndVersion(*global.GlobalMongoClient, name, pkgVersion)
+	source, err := accessors.GetSourceByObjectId(*global.GlobalMongoClient, project.Source)
 	if err != nil {
 		return err
 	}
@@ -236,7 +237,7 @@ func (server *Services) DownloadData(request *DownloadRequest, data PackagebirdS
 	buffer := make([]byte, 64*1024)
 	for {
 		bytes, err := file.Read(buffer)
-		if err == io.EOF {
+		if err == io.EOF || len(buffer) == 0 {
 			break
 		} else if err != nil {
 			return err
@@ -302,6 +303,11 @@ func (server *Services) CreatePackage(context context.Context, request *PackageR
 		Package:  primitive.NewObjectID(),
 		Children: project.Dependencies,
 	}
+	var pkgMetadata = &structures.PackageMetadata{
+		ObjectId:        primitive.NewObjectID(),
+		Package:         graph.Package,
+		NumberDownloads: 0,
+	}
 	var pkg = &structures.Package{
 		Name:     request.GetName(),
 		Version:  project.PackageVersion,
@@ -309,12 +315,45 @@ func (server *Services) CreatePackage(context context.Context, request *PackageR
 		Graph:    graph.ObjectId,
 		Scripts:  []primitive.ObjectID{},
 		ObjectId: graph.Package,
+		Metadata: pkgMetadata.ObjectId,
 	}
-	var pkgMetadata = &structures.PackageMetadata{
-		ObjectId:        primitive.NewObjectID(),
-		Package:         pkg.ObjectId,
-		NumberDownloads: 0,
+
+	projSrc, err := accessors.GetSourceByObjectId(*global.GlobalMongoClient, project.Source)
+	if err != nil {
+		log.Print(err)
+		return nil, err
 	}
+	log.Print(os.Stat(projSrc.Path))
+
+	projSrcFile, err := os.Open(filepath.FromSlash(projSrc.Path))
+	if err != nil {
+		log.Print(err)
+		return nil, err
+	}
+	defer projSrcFile.Close()
+
+	os.MkdirAll(filepath.FromSlash(filepath.Dir(source.Path)), os.ModePerm)
+	pckSrcFile, err := os.Create(source.Path)
+	if err != nil {
+		log.Print(err)
+		return nil, err
+	}
+
+	// Copy synced project source with package source
+	bytes, err := io.Copy(pckSrcFile, projSrcFile)
+	log.Print(bytes)
+	if err != nil {
+		log.Print(err)
+		return nil, err
+	}
+
+	err = pckSrcFile.Sync()
+	pckSrcFile.Close()
+	if err != nil {
+		log.Print(err)
+		return nil, err
+	}
+	log.Print(os.Stat(source.Path))
 
 	err = accessors.CreateSource(*global.GlobalMongoClient, *source)
 	if err != nil {
@@ -331,10 +370,12 @@ func (server *Services) CreatePackage(context context.Context, request *PackageR
 		return response, err
 	}
 
-	err = filesystem.CreatePackageSourceDirectory(pkg.Name, pkg.Version)
-	if err != nil {
-		return response, err
-	}
+	/*
+		err = filesystem.CreatePackageSourceDirectory(pkg.Name, pkg.Version)
+		if err != nil {
+			return response, err
+		}
+	*/
 
 	// Update package version attached to project
 	var update = &bson.D{
@@ -408,6 +449,14 @@ func (server *Services) AddPackage(ctx context.Context, request *AddPackageReque
 		return nil, err
 	}
 
+	dep, err := accessors.GetPackageByNameAndVersion(*global.GlobalMongoClient, request.GetPackageName(), request.GetPackageVersion())
+	if err != nil {
+		log.Print(err)
+		return nil, err
+	}
+
+	deps = append(deps, dep)
+
 	proj, err := accessors.GetProjectByName(*global.GlobalMongoClient, request.GetProjectName())
 	if err != nil {
 		return nil, err
@@ -436,6 +485,11 @@ func (server *Services) AddPackage(ctx context.Context, request *AddPackageReque
 	}
 
 	var message strings.Builder
+	src, err := accessors.GetSourceByObjectId(*global.GlobalMongoClient, dep.Source)
+	if err != nil {
+		return nil, err
+	}
+	paths = append(paths, src.Path)
 	for _, ele := range paths {
 		message.WriteString(ele + "\n")
 	}

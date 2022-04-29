@@ -31,7 +31,7 @@ type PackageMetadata struct {
 	Package          primitive.ObjectID `bson:"packageId"`
 	NumberDownloads  int64              `bson:"numberDownloads"`
 	LastDownloaded   time.Time          `bson:"lastDownloaded"`
-	LastDownloadedBy primitive.ObjectID `bson:"LastDownloadedBy"`
+	LastDownloadedBy primitive.ObjectID `bson:"lastDownloadedBy"`
 }
 
 // User in system

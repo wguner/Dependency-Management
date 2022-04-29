@@ -8,7 +8,7 @@ import (
 )
 
 // GetAllPackageDependencies returns all dependencies of a package
-func GetAllPackageDependenciesByNameAndVersion(client mongo.Client, name string, version int64) ([]structures.Package, error) {
+func GetAllPackageDependenciesByNameAndVersion(client mongo.Client, name string, version int64) ([]*structures.Package, error) {
 
 	// Retrieve package by name and version
 	dep, err := accessors.GetPackageByNameAndVersion(client, name, version)
@@ -23,30 +23,30 @@ func GetAllPackageDependenciesByNameAndVersion(client mongo.Client, name string,
 	}
 
 	// Recursively traverse and collect nodes from graph
-	var nodes *[]structures.Graph
-	err = GetGraph(client, *graph, *nodes)
+	var nodes []*structures.Graph
+	err = GetGraph(client, *graph, nodes)
 	if err != nil {
 		return nil, err
 	}
 
 	// Potential Duplicates present in array
-	children := RemoveDuplicates(*nodes)
+	children := RemoveDuplicates(nodes)
 
 	// Collect all packages present in array
-	var packages []structures.Package
+	var packages []*structures.Package
 	for _, child := range children {
 		packageId := child.Package
 		pck, err := accessors.GetPackageByObjectId(client, packageId)
 		if err != nil {
 			return nil, err
 		}
-		packages = append(packages, *pck)
+		packages = append(packages, pck)
 	}
 
 	return packages, nil
 }
 
-func GetAllPackageDependenciesByObjectId(client mongo.Client, objectId primitive.ObjectID) ([]structures.Package, error) {
+func GetAllPackageDependenciesByObjectId(client mongo.Client, objectId primitive.ObjectID) ([]*structures.Package, error) {
 	pkg, err := accessors.GetPackageByObjectId(client, objectId)
 	if err != nil {
 		return nil, err
@@ -57,29 +57,29 @@ func GetAllPackageDependenciesByObjectId(client mongo.Client, objectId primitive
 		return nil, err
 	}
 
-	var deps *[]structures.Graph
-	err = GetGraph(client, *graph, *deps)
+	var deps []*structures.Graph
+	err = GetGraph(client, *graph, deps)
 	if err != nil {
 		return nil, err
 	}
 
-	children := RemoveDuplicates(*deps)
+	children := RemoveDuplicates(deps)
 
-	var pkgs []structures.Package
+	var pkgs []*structures.Package
 	for _, child := range children {
 		pkgId := child.Package
 		pkg, err := accessors.GetPackageByObjectId(client, pkgId)
 		if err != nil {
 			return nil, err
 		}
-		pkgs = append(pkgs, *pkg)
+		pkgs = append(pkgs, pkg)
 	}
 	return pkgs, nil
 }
 
 // GetGraph recursively traverses a graph and returns the associated nodes
-func GetGraph(client mongo.Client, graph structures.Graph, nodes []structures.Graph) error {
-	nodes = append(nodes, graph)
+func GetGraph(client mongo.Client, graph structures.Graph, nodes []*structures.Graph) error {
+	nodes = append(nodes, &graph)
 	for _, child := range graph.Children {
 		graph, err := accessors.GetGraphByObjectId(client, child)
 		if err != nil {
@@ -149,19 +149,19 @@ func GetPackageScriptsByNameAndVersion(client mongo.Client, name string, version
 	return scripts, nil
 }
 
-func GetAllDependencySources(client mongo.Client, dependencies []structures.Package) ([]structures.Source, error) {
-	var sources []structures.Source
+func GetAllDependencySources(client mongo.Client, dependencies []*structures.Package) ([]*structures.Source, error) {
+	var sources []*structures.Source
 	for _, dep := range dependencies {
 		source, err := accessors.GetSourceByObjectId(client, dep.Source)
 		if err != nil {
 			return nil, err
 		}
-		sources = append(sources, *source)
+		sources = append(sources, source)
 	}
 	return sources, nil
 }
 
-func GetAllSourcePaths(sources []structures.Source) ([]string, error) {
+func GetAllSourcePaths(sources []*structures.Source) ([]string, error) {
 	var paths []string
 	for _, source := range sources {
 		paths = append(paths, source.Path)

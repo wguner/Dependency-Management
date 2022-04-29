@@ -108,20 +108,18 @@ func checkIfPackageInRegistry(name string, version int64) (bool, error) {
 }
 
 func alterPackageMetadata(name string, version int64) error {
-	client, err := GetServerClient()
-	if err != nil {
-		return err
-	}
-
+	client, connection, err := GetServerClient()
+	defer connection.Close()
 	_, err = client.UpdatePackageMetadata(context.Background(), &services.PackageRequest{Name: name, Version: version})
 	if err != nil {
 		return err
 	}
+	connection.Close()
 	return nil
 }
 
 func addToProject(projectName string, packageName string, packageVersion int64) error {
-	client, err := GetServerClient()
+	client, connection, err := GetServerClient()
 	if err != nil {
 		return err
 	}
@@ -135,13 +133,16 @@ func addToProject(projectName string, packageName string, packageVersion int64) 
 		return err
 	}
 
-	separator := fmt.Sprintf("%c", os.PathSeparator)
+	// separator := fmt.Sprintf("%c", os.PathSeparator)
 	wd, err := os.Getwd()
 	if err != nil {
 		return err
 	}
-	packagesDir := fmt.Sprintf(wd, separator, "packages")
+	packagesDir := fmt.Sprintf(wd)
+	packagesDir = filepath.FromSlash(fmt.Sprintf("%v%cpackages", packagesDir, os.PathSeparator))
+	connection.Close()
 	for _, path := range r.GetPaths() {
+		path = filepath.FromSlash(path)
 		if err := installPackage(path, packagesDir); err != nil {
 			return err
 		}
@@ -151,7 +152,8 @@ func addToProject(projectName string, packageName string, packageVersion int64) 
 
 func installPackage(path string, loc string) error {
 	// Create download connection to server
-	client, err := GetServerClient()
+	client, connection, err := GetServerClient()
+	defer connection.Close()
 	if err != nil {
 		return err
 	}
@@ -179,7 +181,9 @@ func installPackage(path string, loc string) error {
 	for {
 		// Receive chunk of download data
 		chunk, err := download.Recv()
-		if err != nil {
+		if err == io.EOF {
+			break
+		} else if err != nil {
 			return err
 		}
 

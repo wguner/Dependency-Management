@@ -27,7 +27,7 @@ type PackagebirdServicesClient interface {
 	CreatePackage(ctx context.Context, in *PackageRequest, opts ...grpc.CallOption) (*OperationResponse, error)
 	// Dependency Operations
 	AddPackage(ctx context.Context, in *AddPackageRequest, opts ...grpc.CallOption) (*AddPackageResponse, error)
-	RemovePackage(ctx context.Context, in *PackageRequest, opts ...grpc.CallOption) (*OperationResponse, error)
+	RemovePackage(ctx context.Context, in *AddPackageRequest, opts ...grpc.CallOption) (*OperationResponse, error)
 	// Package Operations
 	BuildPackage(ctx context.Context, in *PackageRequest, opts ...grpc.CallOption) (*OperationResponse, error)
 	TestPackage(ctx context.Context, in *PackageRequest, opts ...grpc.CallOption) (*OperationResponse, error)
@@ -78,7 +78,7 @@ func (c *packagebirdServicesClient) AddPackage(ctx context.Context, in *AddPacka
 	return out, nil
 }
 
-func (c *packagebirdServicesClient) RemovePackage(ctx context.Context, in *PackageRequest, opts ...grpc.CallOption) (*OperationResponse, error) {
+func (c *packagebirdServicesClient) RemovePackage(ctx context.Context, in *AddPackageRequest, opts ...grpc.CallOption) (*OperationResponse, error) {
 	out := new(OperationResponse)
 	err := c.cc.Invoke(ctx, "/services.PackagebirdServices/RemovePackage", in, out, opts...)
 	if err != nil {
@@ -248,7 +248,7 @@ type PackagebirdServicesServer interface {
 	CreatePackage(context.Context, *PackageRequest) (*OperationResponse, error)
 	// Dependency Operations
 	AddPackage(context.Context, *AddPackageRequest) (*AddPackageResponse, error)
-	RemovePackage(context.Context, *PackageRequest) (*OperationResponse, error)
+	RemovePackage(context.Context, *AddPackageRequest) (*OperationResponse, error)
 	// Package Operations
 	BuildPackage(context.Context, *PackageRequest) (*OperationResponse, error)
 	TestPackage(context.Context, *PackageRequest) (*OperationResponse, error)
@@ -278,7 +278,7 @@ func (UnimplementedPackagebirdServicesServer) CreatePackage(context.Context, *Pa
 func (UnimplementedPackagebirdServicesServer) AddPackage(context.Context, *AddPackageRequest) (*AddPackageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddPackage not implemented")
 }
-func (UnimplementedPackagebirdServicesServer) RemovePackage(context.Context, *PackageRequest) (*OperationResponse, error) {
+func (UnimplementedPackagebirdServicesServer) RemovePackage(context.Context, *AddPackageRequest) (*OperationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemovePackage not implemented")
 }
 func (UnimplementedPackagebirdServicesServer) BuildPackage(context.Context, *PackageRequest) (*OperationResponse, error) {
@@ -376,7 +376,7 @@ func _PackagebirdServices_AddPackage_Handler(srv interface{}, ctx context.Contex
 }
 
 func _PackagebirdServices_RemovePackage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PackageRequest)
+	in := new(AddPackageRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -388,7 +388,7 @@ func _PackagebirdServices_RemovePackage_Handler(srv interface{}, ctx context.Con
 		FullMethod: "/services.PackagebirdServices/RemovePackage",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PackagebirdServicesServer).RemovePackage(ctx, req.(*PackageRequest))
+		return srv.(PackagebirdServicesServer).RemovePackage(ctx, req.(*AddPackageRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

@@ -68,8 +68,8 @@ func GetDocumentFromCollectionNameByObjectId(client mongo.Client, collectionName
 	filter := bson.M{
 		"_id": objectId,
 	}
-
-	return collection.FindOne(context.Background(), filter), nil
+	result := collection.FindOne(context.Background(), filter)
+	return result, nil
 }
 
 func GetDocumentsFromCollectionName(client mongo.Client, collectionName string) (*mongo.Cursor, error) {
@@ -125,7 +125,7 @@ func GetObjectsFromCollectionNameAndFilter(client mongo.Client, collectionName s
 
 	results := reflect.New(reflect.SliceOf(reflect.TypeOf(decodeType)))
 	for documents.Next(context.Background()) {
-		result := &decodeType
+		result := decodeType
 		err := documents.Decode(result)
 		if err != nil {
 			return nil, err
@@ -139,12 +139,12 @@ func GetObjectFromCollectionNameAndFilter(client mongo.Client, collectionName st
 	collection := client.Database("packagebird").Collection(collectionName)
 	document := collection.FindOne(context.Background(), filter)
 
-	result := &decodeType
-	err := document.Decode(*result)
+	result := decodeType
+	err := document.Decode(result)
 	if err != nil {
 		return nil, err
 	}
-	return *result, nil
+	return result, nil
 }
 
 // --- Set Utils ---
@@ -275,14 +275,14 @@ func GetPackageMetadataByNameAndVersion(client mongo.Client, name string, versio
 			},
 		},
 	}
-	pkg, err := GetObjectsFromCollectionNameAndFilter(client, collections.Packages.String(), structures.Package{}, filter)
+	pkg, err := GetObjectFromCollectionNameAndFilter(client, collections.Packages.String(), &structures.Package{}, filter)
 	if err != nil {
 		return nil, err
 	}
 
 	var o = pkg.(*structures.Package)
 
-	obj, err := GetObjectFromCollectionNameByObjectId(client, collections.PackagesMetadata.String(), o.Metadata, structures.Package{})
+	obj, err := GetObjectFromCollectionNameByObjectId(client, collections.PackagesMetadata.String(), o.Metadata, &structures.PackageMetadata{})
 	if err != nil {
 		return nil, err
 	}
@@ -512,7 +512,7 @@ func CreateScript(client mongo.Client, script structures.Script) error {
 // --- Graph Get ---
 
 func GetGraphByObjectId(client mongo.Client, objectId primitive.ObjectID) (*structures.Graph, error) {
-	object, err := GetObjectFromCollectionNameByObjectId(client, collections.Graphs.String(), objectId, structures.Graph{})
+	object, err := GetObjectFromCollectionNameByObjectId(client, collections.Graphs.String(), objectId, &structures.Graph{})
 	if err != nil {
 		return nil, err
 	}

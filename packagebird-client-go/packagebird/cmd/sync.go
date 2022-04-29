@@ -83,14 +83,15 @@ func sync(name string) error {
 		if err != nil {
 			return err
 		}
-		if entry.IsDir() && path == "packages" {
+		if strings.Contains(path, "packages") {
 			return fs.SkipDir
 		}
+		path = filepath.FromSlash(path)
 		fmt.Println("Walking: ", path, "Dir?", entry.IsDir())
 		if !entry.IsDir() {
-			abs, _ := filepath.Abs(entry.Name())
+			// abs, _ := filepath.Abs(entry.Name())
 			separator := fmt.Sprintf("%c", os.PathSeparator)
-			dirs[path] = strings.TrimPrefix(abs, filepath.Dir(root)+separator)
+			dirs[path] = strings.TrimPrefix(root+separator+path, filepath.Dir(root)+separator)
 			if err != nil {
 				return err
 			}

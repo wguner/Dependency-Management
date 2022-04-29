@@ -5,7 +5,6 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"os"
@@ -29,15 +28,11 @@ if you're ready to create a package from the current iteration of a project.`,
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	_, err := GetServerClient()
-	if err != nil {
-		fmt.Print(err)
-	}
-
-	err = rootCmd.Execute()
+	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
 	}
+	os.Exit(0)
 }
 
 func init() {
@@ -52,14 +47,13 @@ func init() {
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func GetServerClient() (services.PackagebirdServicesClient, error) {
+func GetServerClient() (services.PackagebirdServicesClient, *grpc.ClientConn, error) {
 	connection, err := grpc.Dial("127.0.0.1:55051", grpc.WithTransportCredentials(insecure.NewCredentials()))
-	defer connection.Close()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	client := services.NewPackagebirdServicesClient(connection)
-	return client, nil
+	return client, connection, nil
 }
 
 var Client services.PackagebirdServicesClient

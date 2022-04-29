@@ -10,7 +10,6 @@ import (
 	"github.com/mholt/archiver/v4"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"io"
 	"io/fs"
 	"io/ioutil"
 	"log"
@@ -56,10 +55,10 @@ func init() {
 func createPackage(name string, version int64) error {
 
 	// Create bundled directory
-	tarfile, err := makeDirectoryTarfile()
-	if err != nil {
+	// tarfile, err := makeDirectoryTarfile()
+	/* if err != nil {
 		return err
-	}
+	} */
 
 	// Establish connection
 	connection, err := grpc.Dial("127.0.0.1:55051", grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -77,52 +76,55 @@ func createPackage(name string, version int64) error {
 		Version: version,
 	})
 
-	// Create RPC stub
-	upload, err := client.UploadFile(context.Background())
-	if err != nil {
-		return err
-	}
-
-	// Send Path
-	path := pkg.GetMessage()
-	file := &services.File{
-		Content: &services.File_Path{
-			Path: path,
-		},
-	}
-	if err := upload.Send(file); err != nil {
-		log.Print(err)
-		return err
-	}
-
-	// Transmit package source
-	buffer := make([]byte, 64*1024)
-	for {
-		bytes, err := tarfile.Read(buffer)
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			return err
-		}
-
-		chunk := &services.File{
-			Content: &services.File_Chunk{
-				Chunk: buffer[:bytes],
-			},
-		}
-
-		err = upload.Send(chunk)
+	/*
+		// Create RPC stub
+		upload, err := client.UploadFile(context.Background())
 		if err != nil {
 			return err
 		}
-	}
-	tarfile.Close()
-	response, err := upload.CloseAndRecv()
-	if err != nil {
-		fmt.Print(err)
-		return err
-	}
-	fmt.Print(response)
+
+		// Send Path
+		path := pkg.GetMessage()
+		file := &services.File{
+			Content: &services.File_Path{
+				Path: path,
+			},
+		}
+		if err := upload.Send(file); err != nil {
+			log.Print(err)
+			return err
+		}
+
+		// Transmit package source
+		buffer := make([]byte, 64*1024)
+		for {
+			bytes, err := tarfile.Read(buffer)
+			if err == io.EOF {
+				break
+			} else if err != nil {
+				return err
+			}
+
+			chunk := &services.File{
+				Content: &services.File_Chunk{
+					Chunk: buffer[:bytes],
+				},
+			}
+
+			err = upload.Send(chunk)
+			if err != nil {
+				return err
+			}
+		}
+		tarfile.Close()
+		response, err := upload.CloseAndRecv()
+		if err != nil {
+			fmt.Print(err)
+			return err
+		}
+	*/
+
+	fmt.Print(pkg)
 
 	return nil
 }

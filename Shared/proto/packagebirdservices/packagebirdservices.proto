@@ -10,7 +10,7 @@ service PackagebirdServices {
 
   // Dependency Operations
   rpc AddPackage(AddPackageRequest) returns (AddPackageResponse) {};
-  rpc RemovePackage(PackageRequest) returns (OperationResponse) {};
+  rpc RemovePackage(AddPackageRequest) returns (OperationResponse) {};
 
   // Package Operations
   rpc BuildPackage(PackageRequest) returns (OperationResponse) {};
