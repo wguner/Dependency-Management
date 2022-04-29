@@ -99,6 +99,7 @@ namespace Packagebird_Graphical_Client
         {
             var project = registryProjectsList.SelectedItem.ToString();
             var process = GenerateCommand($"create package {project} 0");
+            process.StartInfo.WorkingDirectory = $".\\{project}";
             process.Start();
             registryPackagesList.Items.Clear();
             process = GenerateCommand("get packages");
@@ -151,6 +152,28 @@ namespace Packagebird_Graphical_Client
             var errMsg = newProject.StandardError.ReadToEnd();
 
             this.commandLineOutputTextbox.Text = $"StdOut: {outMsg}\nStdErr: {errMsg}";
+            this.registryProjectsList.Items.Clear();
+
+            var getProjects = GenerateCommand($"get projects");
+            getProjects.Start();
+            string line = "";
+
+            while (true)
+            {
+                char i = (char)getProjects.StandardOutput.Read();
+                if (i.Equals('\n'))
+                {
+                    this.registryProjectsList.Items.Add(line);
+                    line = "";
+                }
+                else
+                {
+                    line += i;
+                }
+                if (getProjects.StandardOutput.EndOfStream == true)
+                    break;
+            }
+            getProjects.WaitForExit();
         }
 
         private void label7_Click(object sender, EventArgs e)
@@ -161,6 +184,72 @@ namespace Packagebird_Graphical_Client
         private void projectPackagesList_SelectedIndexChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            var selectedPackage = this.registryPackagesList.SelectedItem.ToString();
+            string selectedPackageName = selectedPackage!.Split("-v")[0], selectedPackageVersion = selectedPackage!.Split("-v")[1];
+            var addPackage = GenerateCommand($"add package {selectedPackageName} {selectedPackageVersion}");
+            addPackage.StartInfo.WorkingDirectory = $".\\{registryProjectsList.SelectedItem.ToString()}";
+            addPackage.Start();
+            string outMsg = addPackage.StandardOutput.ReadToEnd(), errMsg = addPackage.StandardError.ReadToEnd();
+            addPackage.WaitForExitAsync();
+            var getProjectPackages = GenerateCommand($"get added");
+            getProjectPackages.StartInfo.WorkingDirectory = $".\\{registryProjectsList.SelectedItem.ToString()}";
+            getProjectPackages.Start();
+            string line = "";
+            char c;
+            while (true)
+            {
+                c = (char)getProjectPackages.StandardOutput.Read();
+                if (c == '\n')
+                {
+                    this.projectPackagesList.Items.Add(line);
+                } else
+                {
+                    line += c;
+                }
+                if (getProjectPackages.StandardOutput.EndOfStream)
+                    break;
+            }
+            this.commandLineOutputTextbox.Text = $"Package: {selectedPackageName} Version: {selectedPackageVersion}\nStdOut: {outMsg}\nStdErr: {errMsg}";
+            getProjectPackages.WaitForExit();
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            var syncProject = GenerateCommand("sync");
+            syncProject.StartInfo.WorkingDirectory = $".\\{registryProjectsList.SelectedItem.ToString()}";
+            syncProject.Start();
+            syncProject.WaitForExitAsync();
+        }
+
+        private void registryProjectsList_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var getProjectPackages = GenerateCommand($"get added");
+            if (this.registryProjectsList.Equals(null) || this.registryProjectsList.SelectedIndex.Equals(-1))
+                return;
+            this.projectPackagesList.Items.Clear();
+            getProjectPackages.StartInfo.WorkingDirectory = $".\\{registryProjectsList.SelectedItem.ToString()}";
+            getProjectPackages.Start();
+            string line = "";
+            char c;
+            while (true)
+            {
+                c = (char)getProjectPackages.StandardOutput.Read();
+                if (c == '\n')
+                {
+                    this.projectPackagesList.Items.Add(line);
+                }
+                else
+                {
+                    line += c;
+                }
+                if (getProjectPackages.StandardOutput.EndOfStream)
+                    break;
+            }
+            getProjectPackages.WaitForExit();
         }
     }
 }

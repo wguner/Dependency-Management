@@ -58,6 +58,7 @@
             this.button1.TabIndex = 0;
             this.button1.Text = "Add Package";
             this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // button2
             // 
@@ -95,6 +96,7 @@
             this.registryProjectsList.Name = "registryProjectsList";
             this.registryProjectsList.Size = new System.Drawing.Size(156, 259);
             this.registryProjectsList.TabIndex = 4;
+            this.registryProjectsList.SelectedIndexChanged += new System.EventHandler(this.registryProjectsList_SelectedIndexChanged);
             // 
             // label2
             // 
@@ -169,6 +171,7 @@
             this.button5.TabIndex = 12;
             this.button5.Text = "Sync Project";
             this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.button5_Click);
             // 
             // button6
             // 
