@@ -47,13 +47,24 @@ func init() {
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
+var GlobalServerAddress string
+
 func GetServerClient() (services.PackagebirdServicesClient, *grpc.ClientConn, error) {
-	connection, err := grpc.Dial("127.0.0.1:55051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	connection, err := grpc.Dial(GetServerAddress(), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, nil, err
 	}
 	client := services.NewPackagebirdServicesClient(connection)
 	return client, connection, nil
+}
+
+func GetServerAddress() string {
+	addr := os.Getenv("PACKAGEBIRD_SERVER_ADDRESS")
+	if addr == "" || len(addr) <= 0 {
+		os.Setenv("PACKAGEBIRD_SERVER_ADDRESS", "127.0.0.1:55051")
+		return os.Getenv("PACKAGEBIRD_SERVER_ADDRESS")
+	}
+	return addr
 }
 
 var Client services.PackagebirdServicesClient

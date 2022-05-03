@@ -11,7 +11,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"io"
-	"io/fs"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -22,16 +21,9 @@ import (
 
 // packageCmd represents the package command
 var packageCmd = &cobra.Command{
-	Use:   "package",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Use:   "project",
+	Short: "Install a package from the server",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("package called")
 		if err := install(args[0]); err != nil {
 			fmt.Print(err)
 		}
@@ -55,7 +47,7 @@ func init() {
 func install(name string) error {
 
 	// Establishing connection
-	connection, err := grpc.Dial("127.0.0.1:55051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	connection, err := grpc.Dial(GetServerAddress(), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return err
 	}
@@ -66,19 +58,30 @@ func install(name string) error {
 
 	// Creating request
 	project := &services.DownloadRequest{Path: name}
+	wd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	if err := handleDownload(client, project, wd); err != nil {
+		return err
+	}
 
-	// Create RPC stub
-	download, err := client.DownloadFile(context.Background(), project)
+	// End operation
+	return nil
+}
+
+func handleDownload(service services.PackagebirdServicesClient, request *services.DownloadRequest, path string) error {
+	// Establish download handler
+	download, err := service.DownloadFile(context.Background(), request)
 	if err != nil {
 		return err
 	}
 
-	// Create temp file
+	// Create temporary file to receive data
 	tarfile, err := ioutil.TempFile(os.TempDir(), "src-")
 	if err != nil {
 		return err
 	}
-	// defer tarfile.Close()
 	defer os.Remove(tarfile.Name())
 
 	// Begin receiving data
@@ -101,36 +104,28 @@ func install(name string) error {
 		}
 	}
 
-	// Notify server
-	if err := download.CloseSend(); err != nil {
-		return err
-	}
-
-	// Create local directory
-	dir, err := os.Getwd()
+	// Notify server of finish
+	err = download.CloseSend()
 	if err != nil {
 		return err
 	}
 
-	// Create subdirectories
-	separator := fmt.Sprintf("%c", os.PathSeparator)
-	os.Mkdir(dir+separator+name, fs.ModePerm) // Project subdirectory
-	_, err = tarfile.Seek(0, 0)
-	if err != nil {
-		return err
-	}
-	path, err := filepath.Abs(tarfile.Name())
-	if err != nil {
-		return err
-	}
-	cmd := exec.Command("tar", "-xf", path) // syscall.Exec(binary, args, os.Environ())
-	err = cmd.Run()
+	// Create or get directory specified in Path
+	err = os.MkdirAll(path, os.ModePerm)
 	if err != nil {
 		return err
 	}
 
-	tarfile.Close()
+	// Get reference to temporary file
+	tarfilePath, err := filepath.Abs(tarfile.Name())
+	if err != nil {
+		return err
+	}
 
-	// End operation
+	// Execute extraction command, extract to specified location
+	cmd := exec.Command("tar", "-xf", tarfilePath, "-C", path)
+	if err := cmd.Run(); err != nil {
+		return err
+	}
 	return nil
 }

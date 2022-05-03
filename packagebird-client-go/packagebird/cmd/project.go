@@ -38,7 +38,7 @@ func createProject(projectName string) {
 	if err := os.Mkdir(fmt.Sprintf("%v/packages", projectName), fs.ModePerm); err != nil {
 
 	}
-	connection, err := grpc.Dial("127.0.0.1:55051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	connection, err := grpc.Dial(GetServerAddress(), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		panic(err)
 	}
