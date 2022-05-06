@@ -8,6 +8,7 @@ import (
 	"testing"
 )
 
+
 func TestGetPackageDependenciesRecurse(t *testing.T) {
 	list := []string{}
 
@@ -54,3 +55,33 @@ func TestDeletePackage(t *testing.T) {
 	}
 }
 
+func TestDeleteAllPackage(t *testing.T) {
+	mongoDBClient, _ := MongoDBServerConnect("mongodb://localhost:27017")
+	var testPackage = buildtest.PackageInfo{Name: "oreo", Version: 0}
+	var testStruct = structures.Package{Name: "oreo", Version: 0}
+	NewPackage(*mongoDBClient, testStruct)
+	_, err := GetPackage(*structures.GlobalMongoClient, "oreo", 0)
+	if err != nil {
+		log.Printf("Test packages is succesfully added: %v", (testPackage.GetName()))
+	}
+
+	DeleteAllPackages(*mongoDBClient, testStruct)
+	if err == nil {
+		log.Printf("Packages: %v is deleted.", (testPackage.GetName()))
+	}
+}
+
+func TestLookupPackage(t *testing.T) {
+	mongoDBClient, _ := MongoDBServerConnect("mongodb://localhost:27017")
+	var testPackage = buildtest.PackageInfo{Name: "oreo", Version: 0}
+	var testStruct = structures.Package{Name: "oreo", Version: 0}
+	NewPackage(*mongoDBClient, testStruct)
+	_, err := GetPackage(*structures.GlobalMongoClient, "oreo", 0)
+	if err != nil {
+		log.Printf("Test package is succesfully added: %v", (testPackage.GetName()))
+	}
+	LookupPackage(*mongoDBClient, testStruct)
+	if err == nil {
+		log.Printf("Package: %v is found.", (testPackage.GetName()))
+	}
+}
