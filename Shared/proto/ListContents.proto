@@ -1,0 +1,24 @@
+syntax="proto3";
+
+option go_package = "./listcontent";
+
+package listcontent;
+
+// Serices associated with listing content operations
+service ListContentServices {
+    rpc GetContent(ContentRequest) returns (ContentResponse);
+}
+
+// Content Request
+message ContentRequest {
+    bool ListProjects = 1;
+    bool ListPackages = 2;
+    bool ListMembers = 3;
+}
+
+// Content Response
+message ContentResponse {
+    repeated string Projects = 1;
+    repeated string Packages = 2;
+    repeated string Members = 3;
+}

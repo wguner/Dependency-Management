@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option go_package = "./ProjectOperations";
+
+package ProjectOperations;
+
+// Services associated with package operations
+service ProjectOperationServices {
+	rpc GetProject(ProjectRequest) returns (ProjectResponse);
+}
+
+// Project Request
+message ProjectRequest {
+	string name = 1;
+	string description = 2;
+}
+
+// Project Response
+message ProjectResponse {
+	bool exist = 1;
+}

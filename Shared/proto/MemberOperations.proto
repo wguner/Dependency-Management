@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+option go_package = "./member-operations";
+
+package MemberOperations;
+
+// CRUD operations associated with members
+service MemberCRUDServices {
+    rpc CreateMember(MemberRequest) returns (MemberResponse);
+    rpc RemoveMember(MemberRequest) returns (MemberResponse);
+}
+
+// Messages associated with CRUD services
+message MemberRequest {
+    string name = 1;
+    string password = 2;
+    string level = 3;
+}
+
+message MemberResponse {
+    string response = 1;
+    bool was_successful = 2;
+}
+
+// Authentication operations associated with members
+service MemberAuthentication {
+    rpc AuthenticateMember(MemberAuthenticationRequest) returns (MemberAuthenticationResponse);
+}
+
+// Messages associated with authentication services
+message MemberAuthenticationRequest {
+    string name = 1;
+    string password = 2;
+    string level = 3;
+    bool is_level = 4;
+} 
+
+message MemberAuthenticationResponse {
+    string response = 1;
+    bool is_authenticated = 2;
+}

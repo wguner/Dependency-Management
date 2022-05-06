@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+option go_package = "./buildtest";
+
+package BuildTest;
+
+// Services associated
+// Generates pseudo package from information transmitted from client,  returns a status message depending upon result
+service BuildTestServices {
+    rpc Build(PackageInfo) returns (BuildInfo);
+    rpc Test(PackageInfo) returns (BuildInfo);
+}
+
+
+/*
+To Build a Package, Server needs:
+- Name of package
+- Version of package
+
+Assembled a psuedo-package with those values and passed into build package source function
+*/
+
+/*
+To build a package, Client needs:
+- Notice of operation, could be:
+    - simple string
+    - path of resulting build? 
+    - transfer of notice and resulting build file to client (should be an option specified, can come later)
+*/
+
+message PackageInfo {
+    string name = 1;
+    int64 version = 2;
+}
+
+message BuildInfo {
+    string status = 1;
+    string message = 2;
+}

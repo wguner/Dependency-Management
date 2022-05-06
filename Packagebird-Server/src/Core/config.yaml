@@ -1,0 +1,4 @@
+packagesourcepath: C:\Users\ElishaAguilera\Documents\packages
+projectsourcepath: C:\Users\ElishaAguilera\Documents\projects
+serveraddress: 127.0.0.1:50051
+databaseaddress: mongodb://localhost:27017

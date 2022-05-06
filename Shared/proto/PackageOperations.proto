@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+option go_package = "./PackageOperations";
+
+package PackageOperations;
+
+// Services associated with package operations 
+service PackageOperationServices {
+    rpc ListPackages(PackageListRequest) returns (PackageList);
+    rpc TestPackage(PackageTestRequest) returns (PackageTestResponse);
+    rpc BuildPackage(PackageBuildRequest) returns (PackageBuildResponse);
+    rpc GetPackageList(PackageRequest) returns (PackageListResponse);
+}
+
+// Package Listing Messages
+message PackageListRequest {}
+
+message PackageList {
+    string list = 1;
+}
+
+// Package Testing Messages
+message PackageTestRequest {
+    string packagename = 1;
+}
+
+message PackageTestResponse {
+    string response = 1;
+}
+
+// Package Building Messages
+message PackageBuildRequest {
+    string packagename = 1;
+}
+
+message PackageBuildResponse {
+    string response = 1;
+}
+
+// Incoming package request, generate list of depedencies, return list
+message PackageRequest {
+    string packageitem = 1;
+}
+
+// Outgoing package list, list of dependencies
+message PackageListResponse {
+    repeated string packageitem = 1;
+}
