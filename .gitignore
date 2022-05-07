@@ -149,7 +149,7 @@ cython_debug/
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-#.idea/
+.idea/
 
 # Executables should be rebuilt on end machines and not committed to remote repository
 *.exe
@@ -159,3 +159,6 @@ Packagebird-Server/src/Core/Compiles/config.yaml
 Packagebird-Server/src/Core/Packagebird-Server-DebianLinuxAMD64
 Packagebird-Server/src/Core/Packagebird-Server-WindowsAMD64
 Packagebird-Server/src/Core/Packagebird-Server-LinuxAMD64
+
+# Ignore builds directory
+.builds/

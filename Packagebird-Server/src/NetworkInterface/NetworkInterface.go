@@ -1,32 +1,18 @@
 package NetworkInterface
 
 import (
-	"log"
-	"net"
-
-	fileTransfer "packagebird-server/src/NetworkInterface/FileTransfer"
-	packageOperations "packagebird-server/src/NetworkInterface/PackageOperations"
-	projectOperations "packagebird-server/src/NetworkInterface/ProjectOperations"
-	serverUtils "packagebird-server/src/NetworkInterface/ServerUtils"
-	buildtest "packagebird-server/src/NetworkInterface/buildtest"
-	listcontent "packagebird-server/src/NetworkInterface/listcontent"
-	member_operations "packagebird-server/src/NetworkInterface/member_operations"
-
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
+	"log"
+	"net"
+	fileTransfer "packagebird-server/src/NetworkInterface/FileTransfer"
+	buildtest "packagebird-server/src/NetworkInterface/buildtest"
+	interfaces "packagebird-server/src/NetworkInterface/interfaces"
+	listcontent "packagebird-server/src/NetworkInterface/listcontent"
+	member_operations "packagebird-server/src/NetworkInterface/member_operations"
 )
 
 // All to-be-implemented gRPC methods must be added to this structure
-type GRPCServer struct {
-	packageOperations.UnimplementedPackageOperationServicesServer
-	projectOperations.UnimplementedProjectOperationServicesServer
-	fileTransfer.UnimplementedFileServiceServer
-	serverUtils.UnimplementedServerUtilsServicesServer
-	listcontent.UnimplementedListContentServicesServer
-	buildtest.UnimplementedBuildTestServicesServer
-	member_operations.UnimplementedMemberCRUDServicesServer
-	member_operations.UnimplementedMemberAuthenticationServer
-}
 
 // Global mongoDBClient reference
 var mongoDBClientGlobal *mongo.Client
@@ -48,14 +34,11 @@ func PackagebirdServerStart(address string, mongodbClient *mongo.Client) error {
 	server := grpc.NewServer()
 
 	// Register passed functions with implementations, must add each set of operations
-	packageOperations.RegisterPackageOperationServicesServer(server, &GRPCServer{})
-	projectOperations.RegisterProjectOperationServicesServer(server, &GRPCServer{})
-	fileTransfer.RegisterFileServiceServer(server, &GRPCServer{})
-	serverUtils.RegisterServerUtilsServicesServer(server, &GRPCServer{})
-	listcontent.RegisterListContentServicesServer(server, &GRPCServer{})
-	buildtest.RegisterBuildTestServicesServer(server, &GRPCServer{})
-	member_operations.RegisterMemberCRUDServicesServer(server, &GRPCServer{})
-	member_operations.RegisterMemberAuthenticationServer(server, &GRPCServer{})
+	fileTransfer.RegisterFileServiceServer(server, &interfaces.GRPCServer{})
+	listcontent.RegisterListContentServicesServer(server, &interfaces.GRPCServer{})
+	buildtest.RegisterBuildTestServicesServer(server, &interfaces.GRPCServer{})
+	member_operations.RegisterMemberCRUDServicesServer(server, &interfaces.GRPCServer{})
+	member_operations.RegisterMemberAuthenticationServer(server, &interfaces.GRPCServer{})
 
 	log.Print("Registered gRPC methods on server...")
 

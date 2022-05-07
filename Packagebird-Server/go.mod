@@ -1,18 +1,18 @@
 module packagebird-server
 
-go 1.17
+go 1.18
 
 require (
+	github.com/arduino/go-paths-helper v1.2.0
 	github.com/stretchr/testify v1.7.0
 	google.golang.org/grpc v1.43.0
-	google.golang.org/protobuf v1.25.0
+	google.golang.org/protobuf v1.26.0
 )
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
-	github.com/google/go-cmp v0.5.2 // indirect
 	github.com/h2non/filetype v1.0.6 // indirect
 	github.com/juju/errors v0.0.0-20181118221551-089d3ea4e4d5 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
@@ -28,7 +28,7 @@ require (
 
 require (
 	github.com/codeclysm/extract/v3 v3.0.2
-	github.com/golang/protobuf v1.4.3 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
 	go.mongodb.org/mongo-driver v1.8.2
 	golang.org/x/net v0.0.0-20200822124328-c89045814202 // indirect
 	golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd // indirect

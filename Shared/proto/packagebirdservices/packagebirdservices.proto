@@ -1,0 +1,101 @@
+syntax = "proto3";
+option go_package = ".";
+
+package services;
+
+service PackagebirdServices {
+  // Create Operations
+  rpc CreateProject(ProjectRequest) returns (OperationResponse) {};
+  rpc CreatePackage(PackageRequest) returns (OperationResponse) {};
+
+  // Dependency Operations
+  rpc AddPackage(AddPackageRequest) returns (AddPackageResponse) {};
+  rpc RemovePackage(AddPackageRequest) returns (OperationResponse) {};
+
+  // Package Operations
+  rpc BuildPackage(PackageRequest) returns (OperationResponse) {};
+  rpc TestPackage(PackageRequest) returns (OperationResponse) {};
+
+  // Get Operations
+  rpc GetPackages(Blank) returns (PackageList) {};
+  rpc GetProjects(Blank) returns (ProjectList) {};
+  rpc GetPackageMetadata(PackageRequest) returns (PackageMetadata) {};
+
+  // Update Operations
+  rpc UpdatePackageMetadata(PackageRequest) returns (OperationResponse) {};
+
+  // File Transfer Operations
+  rpc DownloadFile(DownloadRequest) returns (stream File) {};
+  rpc UploadFile(stream File) returns (OperationResponse) {};
+  rpc DownloadData(DownloadRequest) returns (stream File) {};
+}
+
+message Blank {
+
+}
+
+message PackageMetadata {
+  string packageId = 1;
+  int64 numberDownloads = 2;
+  string lastDownloaded = 3;
+  string lastDownloadedBy = 4;
+}
+
+message AddPackageRequest {
+  string projectName = 1;
+  string packageName = 2;
+  int64 packageVersion = 3;
+}
+
+message AddPackageResponse {
+  repeated string paths = 1;
+}
+
+message AddPackageResponsePackage {}
+
+message PackageList {
+  repeated PackageInfo packages = 1;
+}
+
+message PackageInfo {
+  string name = 1;
+  int64 version = 2;
+}
+
+message ProjectList {
+  repeated ProjectName names = 1;
+}
+
+message ProjectName {
+  string name = 1;
+}
+
+message PackageName {
+  string name = 1;
+}
+
+message ProjectRequest {
+  string name = 1;
+}
+
+message PackageRequest {
+  string name = 1;
+  int64 version = 2;
+}
+
+message OperationResponse {
+  bool success = 1;
+  string header = 2;
+  string message = 3;
+}
+
+message DownloadRequest {
+  string path = 1;
+}
+
+message File {
+  oneof content {
+    string path = 1;
+    bytes chunk = 2;
+  }
+}
