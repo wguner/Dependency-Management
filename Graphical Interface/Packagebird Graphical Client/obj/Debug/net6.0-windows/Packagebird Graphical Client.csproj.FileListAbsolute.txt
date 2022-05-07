@@ -1,0 +1,17 @@
+C:\Users\Elisha Aguilera\source\repos\Dependency-Management\Graphical Interface\Packagebird Graphical Client\bin\Debug\net6.0-windows\Packagebird Graphical Client.exe
+C:\Users\Elisha Aguilera\source\repos\Dependency-Management\Graphical Interface\Packagebird Graphical Client\bin\Debug\net6.0-windows\Packagebird Graphical Client.deps.json
+C:\Users\Elisha Aguilera\source\repos\Dependency-Management\Graphical Interface\Packagebird Graphical Client\bin\Debug\net6.0-windows\Packagebird Graphical Client.runtimeconfig.json
+C:\Users\Elisha Aguilera\source\repos\Dependency-Management\Graphical Interface\Packagebird Graphical Client\bin\Debug\net6.0-windows\Packagebird Graphical Client.dll
+C:\Users\Elisha Aguilera\source\repos\Dependency-Management\Graphical Interface\Packagebird Graphical Client\bin\Debug\net6.0-windows\Packagebird Graphical Client.pdb
+C:\Users\Elisha Aguilera\source\repos\Dependency-Management\Graphical Interface\Packagebird Graphical Client\obj\Debug\net6.0-windows\Packagebird Graphical Client.csproj.AssemblyReference.cache
+C:\Users\Elisha Aguilera\source\repos\Dependency-Management\Graphical Interface\Packagebird Graphical Client\obj\Debug\net6.0-windows\Packagebird_Graphical_Client.Form1.resources
+C:\Users\Elisha Aguilera\source\repos\Dependency-Management\Graphical Interface\Packagebird Graphical Client\obj\Debug\net6.0-windows\Packagebird Graphical Client.csproj.GenerateResource.cache
+C:\Users\Elisha Aguilera\source\repos\Dependency-Management\Graphical Interface\Packagebird Graphical Client\obj\Debug\net6.0-windows\Packagebird Graphical Client.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Elisha Aguilera\source\repos\Dependency-Management\Graphical Interface\Packagebird Graphical Client\obj\Debug\net6.0-windows\Packagebird Graphical Client.AssemblyInfoInputs.cache
+C:\Users\Elisha Aguilera\source\repos\Dependency-Management\Graphical Interface\Packagebird Graphical Client\obj\Debug\net6.0-windows\Packagebird Graphical Client.AssemblyInfo.cs
+C:\Users\Elisha Aguilera\source\repos\Dependency-Management\Graphical Interface\Packagebird Graphical Client\obj\Debug\net6.0-windows\Packagebird Graphical Client.csproj.CoreCompileInputs.cache
+C:\Users\Elisha Aguilera\source\repos\Dependency-Management\Graphical Interface\Packagebird Graphical Client\obj\Debug\net6.0-windows\Packagebird Graphical Client.dll
+C:\Users\Elisha Aguilera\source\repos\Dependency-Management\Graphical Interface\Packagebird Graphical Client\obj\Debug\net6.0-windows\refint\Packagebird Graphical Client.dll
+C:\Users\Elisha Aguilera\source\repos\Dependency-Management\Graphical Interface\Packagebird Graphical Client\obj\Debug\net6.0-windows\Packagebird Graphical Client.pdb
+C:\Users\Elisha Aguilera\source\repos\Dependency-Management\Graphical Interface\Packagebird Graphical Client\obj\Debug\net6.0-windows\Packagebird Graphical Client.genruntimeconfig.cache
+C:\Users\Elisha Aguilera\source\repos\Dependency-Management\Graphical Interface\Packagebird Graphical Client\obj\Debug\net6.0-windows\ref\Packagebird Graphical Client.dll
