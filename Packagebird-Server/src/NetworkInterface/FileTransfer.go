@@ -18,6 +18,9 @@ const (
 	CHUNKSIZE   = 64 * 1024
 )
 
+type GRPCServer struct {
+}
+
 // Downloads a file from the server to the requesting client
 func (server *GRPCServer) Download(request *fileTransfer.Request, fileStream fileTransfer.FileService_DownloadServer) error {
 	log.Printf("Received request for package %v", request.GetBody())

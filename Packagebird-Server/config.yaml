@@ -1,0 +1,4 @@
+packagesourcepath: C:\Users\Elisha Aguilera\source\repos\Dependency-Management\Packagebird-Server/packages
+projectsourcepath: C:\Users\Elisha Aguilera\source\repos\Dependency-Management\Packagebird-Server/projects
+serveraddress: :50051
+databaseaddress: mongodb://localhost:27017
